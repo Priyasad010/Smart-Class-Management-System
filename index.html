@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Class Management System</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 255, 255, 0.78);
+      --panel-strong: #ffffff;
+      --text: #16202a;
+      --muted: #66727f;
+      --line: rgba(22, 32, 42, 0.08);
+      --accent: #0f766e;
+      --accent-2: #d97706;
+      --accent-soft: rgba(15, 118, 110, 0.12);
+      --good: #15803d;
+      --warn: #b45309;
+      --shadow: 0 24px 80px rgba(30, 41, 59, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(217, 119, 6, 0.16), transparent 26%),
+        linear-gradient(180deg, #f8f4ec 0%, #f1ede5 100%);
+      font-family: "Georgia", "Times New Roman", serif;
+      line-height: 1.5;
+    }
+
+    .shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      min-height: calc(100vh - 48px);
+    }
+
+    .sidebar,
+    .content,
+    .card,
+    .stats-card,
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      border-radius: 30px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 24px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #0b4f4a);
+      box-shadow: 0 18px 30px rgba(15, 118, 110, 0.24);
+    }
+
+    .brand h1,
+    .brand p,
+    .section-title h2,
+    .section-title p,
+    .nav a,
+    .badge,
+    .pill,
+    .metric-label,
+    .metric-value,
+    .table th,
+    .table td,
+    .quick-action,
+    .notice,
+    .status {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .brand h1 {
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+    }
+
+    .brand p {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid transparent;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      transform: translateX(3px);
+      border-color: rgba(15, 118, 110, 0.2);
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .nav small {
+      color: var(--muted);
+    }
+
+    .sidebar-footer {
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 14px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--good);
+      box-shadow: 0 0 0 6px rgba(21, 128, 61, 0.12);
+    }
+
+    .content {
+      border-radius: 36px;
+      padding: 28px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h2 {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3.4rem);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+    }
+
+    .title-block p {
+      margin: 12px 0 0;
+      max-width: 680px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .date-box {
+      text-align: right;
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid var(--line);
+      min-width: 220px;
+    }
+
+    .date-box strong {
+      display: block;
+      font-size: 1.1rem;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .date-box span {
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .stats-card {
+      border-radius: 24px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -50% auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15,118,110,0.18) 0%, rgba(15,118,110,0) 70%);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .metric-value {
+      margin-top: 12px;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-meta {
+      margin-top: 10px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--good);
+      font-size: 0.9rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border-radius: 28px;
+      padding: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-title h2 {
+      font-size: 1.2rem;
+    }
+
+    .section-title p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .class-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .class-item {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(22, 32, 42, 0.06);
+    }
+
+    .class-time {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .class-name {
+      margin: 0 0 4px;
+      font-size: 1.04rem;
+      font-weight: 700;
+    }
+
+    .class-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .tag {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(217, 119, 6, 0.12);
+      color: var(--accent-2);
+      white-space: nowrap;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mini-card {
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid rgba(22, 32, 42, 0.06);
+    }
+
+    .mini-card span {
+      display: block;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 1.25rem;
+    }
+
+    .progress-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .progress-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.92rem;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(22, 32, 42, 0.08);
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #14b8a6);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+    }
+
+    .table th,
+    .table td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(22, 32, 42, 0.06);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.94rem;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 84px;
+    }
+
+    .present {
+      background: rgba(21, 128, 61, 0.12);
+      color: var(--good);
+    }
+
+    .late {
+      background: rgba(180, 83, 9, 0.12);
+      color: var(--warn);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quick-action {
+      border: 1px solid rgba(22, 32, 42, 0.08);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: left;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+
+    .quick-action:hover {
+      transform: translateY(-2px);
+      border-color: rgba(15, 118, 110, 0.2);
+    }
+
+    .notice {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(22, 32, 42, 0.06);
+      display: grid;
+      gap: 6px;
+    }
+
+    .notice strong {
+      font-size: 0.98rem;
+    }
+
+    .notice span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 1180px) {
+      .app,
+      .main-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        padding: 14px;
+      }
+
+      .content,
+      .sidebar {
+        border-radius: 24px;
+        padding: 18px;
+      }
+
+      .topbar,
+      .section-title,
+      .class-item {
+        grid-template-columns: 1fr;
+        display: grid;
+        justify-items: start;
+      }
+
+      .date-box {
+        min-width: 0;
+        width: 100%;
+        text-align: left;
+      }
+
+      .class-item {
+        gap: 8px;
+      }
+
+      .actions,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table th,
+      .table td {
+        padding: 12px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">SC</div>
+          <div>
+            <h1>Smart Class</h1>
+            <p>Management System</p>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Main navigation">
+          <a class="active" href="#dashboard"><span>Dashboard</span><small>01</small></a>
+          <a href="#classes"><span>Classes</span><small>08</small></a>
+          <a href="#students"><span>Students</span><small>126</small></a>
+          <a href="#attendance"><span>Attendance</span><small>94%</small></a>
+          <a href="#notices"><span>Notices</span><small>04</small></a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="status"><span class="dot"></span> Live classroom connected</div>
+          <div class="footer-note">Focus on what matters today: attendance, schedules, and class activity.</div>
+        </div>
+      </aside>
+
+      <main class="content" id="dashboard">
+        <div class="topbar">
+          <div class="title-block">
+            <h2>Run classrooms with one clear dashboard.</h2>
+            <p>Track today’s timetable, monitor attendance, and keep teachers and students aligned with a simple operational view.</p>
+          </div>
+          <div class="date-box">
+            <strong id="current-date">Wednesday, May 28</strong>
+            <span id="current-time">08:30 AM</span>
+          </div>
+        </div>
+
+        <section class="stats-grid" aria-label="Summary metrics">
+          <div class="stats-card">
+            <div class="metric-label">Active classes</div>
+            <div class="metric-value">12</div>
+            <div class="metric-meta">+2 from yesterday</div>
+          </div>
+          <div class="stats-card">
+            <div class="metric-label">Students present</div>
+            <div class="metric-value">94%</div>
+            <div class="metric-meta">Attendance is healthy</div>
+          </div>
+          <div class="stats-card">
+            <div class="metric-label">Pending tasks</div>
+            <div class="metric-value">18</div>
+            <div class="metric-meta">6 need review today</div>
+          </div>
+          <div class="stats-card">
+            <div class="metric-label">Alerts</div>
+            <div class="metric-value">3</div>
+            <div class="metric-meta">2 device, 1 schedule</div>
+          </div>
+        </section>
+
+        <section class="main-grid">
+          <div class="panel" id="classes">
+            <div class="section-title">
+              <div>
+                <h2>Today’s Classes</h2>
+                <p>Morning schedule and current classroom state.</p>
+              </div>
+              <div class="pill">Live</div>
+            </div>
+
+            <div class="class-list">
+              <article class="class-item">
+                <div class="class-time">08:00</div>
+                <div>
+                  <p class="class-name">Mathematics - Grade 8</p>
+                  <p class="class-subtitle">Teacher: Ms. Patel · Room 204</p>
+                </div>
+                <div class="tag">In Progress</div>
+              </article>
+              <article class="class-item">
+                <div class="class-time">09:00</div>
+                <div>
+                  <p class="class-name">Science Lab</p>
+                  <p class="class-subtitle">Teacher: Mr. Khan · Lab A</p>
+                </div>
+                <div class="tag">Next Up</div>
+              </article>
+              <article class="class-item">
+                <div class="class-time">10:30</div>
+                <div>
+                  <p class="class-name">English Literature</p>
+                  <p class="class-subtitle">Teacher: Mrs. Roy · Room 108</p>
+                </div>
+                <div class="tag">Scheduled</div>
+              </article>
+            </div>
+          </div>
+
+          <div class="side-stack">
+            <section class="panel" id="attendance">
+              <div class="section-title">
+                <div>
+                  <h2>Attendance Snapshot</h2>
+                  <p>Across the three most active classes.</p>
+                </div>
+                <div class="pill">94%</div>
+              </div>
+
+              <div class="progress-list">
+                <div class="progress-row">
+                  <div class="progress-label"><span>Mathematics</span><span>97%</span></div>
+                  <div class="bar"><span style="width:97%"></span></div>
+                </div>
+                <div class="progress-row">
+                  <div class="progress-label"><span>Science</span><span>92%</span></div>
+                  <div class="bar"><span style="width:92%"></span></div>
+                </div>
+                <div class="progress-row">
+                  <div class="progress-label"><span>English</span><span>89%</span></div>
+                  <div class="bar"><span style="width:89%"></span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="section-title">
+                <div>
+                  <h2>Quick Actions</h2>
+                  <p>Common tasks for staff.</p>
+                </div>
+              </div>
+              <div class="actions">
+                <button class="quick-action" type="button">Mark attendance</button>
+                <button class="quick-action" type="button">Send notice</button>
+                <button class="quick-action" type="button">Create class</button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="panel" id="students">
+          <div class="section-title">
+            <div>
+              <h2>Student Overview</h2>
+              <p>Current status for key learners.</p>
+            </div>
+            <div class="pill">126 students</div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Guardian Contact</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Aarav Sharma</td>
+                <td>Grade 8 - A</td>
+                <td>+91 98765 12001</td>
+                <td><span class="badge present">Present</span></td>
+              </tr>
+              <tr>
+                <td>Meera Iyer</td>
+                <td>Grade 8 - B</td>
+                <td>+91 98765 12009</td>
+                <td><span class="badge present">Present</span></td>
+              </tr>
+              <tr>
+                <td>Rohan Das</td>
+                <td>Grade 7 - C</td>
+                <td>+91 98765 12021</td>
+                <td><span class="badge late">Late</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="main-grid" id="notices">
+          <section class="panel">
+            <div class="section-title">
+              <div>
+                <h2>Recent Notices</h2>
+                <p>Announcements shared with staff and students.</p>
+              </div>
+            </div>
+            <div class="class-list">
+              <div class="notice">
+                <strong>Parent meeting on Friday</strong>
+                <span>Audit hall reserved from 3:00 PM to 5:00 PM.</span>
+              </div>
+              <div class="notice">
+                <strong>Physics lab maintenance</strong>
+                <span>Lab B will be unavailable after lunch today.</span>
+              </div>
+              <div class="notice">
+                <strong>Exam schedule update</strong>
+                <span>Grade 9 revision session shifted to 11:00 AM.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-title">
+              <div>
+                <h2>System Health</h2>
+                <p>Infrastructure and device summary.</p>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini-card">
+                <span>Smart boards online</span>
+                <strong>08 / 09</strong>
+              </div>
+              <div class="mini-card">
+                <span>Projectors online</span>
+                <strong>11 / 12</strong>
+              </div>
+              <div class="mini-card">
+                <span>Wi-Fi uptime</span>
+                <strong>99.6%</strong>
+              </div>
+              <div class="mini-card">
+                <span>Reports generated</span>
+                <strong>24</strong>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const dateElement = document.getElementById('current-date');
+    const timeElement = document.getElementById('current-time');
+
+    const formatDate = (date) => new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+
+    const formatTime = (date) => new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(date);
+
+    const updateClock = () => {
+      const now = new Date();
+      dateElement.textContent = formatDate(now);
+      timeElement.textContent = formatTime(now);
+    };
+
+    updateClock();
+    setInterval(updateClock, 60000);
+  </script>
+</body>
+</html>
