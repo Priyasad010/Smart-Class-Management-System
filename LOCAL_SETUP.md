@@ -133,7 +133,6 @@ CREATE USER smartclass WITH PASSWORD 'Thusitha@2026';
 ALTER ROLE smartclass SET client_encoding TO 'utf8';
 ALTER ROLE smartclass SET default_transaction_isolation TO 'read committed';
 ALTER ROLE smartclass SET default_transaction_deferrable TO on;
-GRANT ALL PRIVILEGES ON DATABASE thusitha_db TO smartclass;
 GRANT ALL PRIVILEGES ON DATABASE thusithaedu_db TO smartclass;
 
 -- Exit

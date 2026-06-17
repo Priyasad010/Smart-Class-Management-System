@@ -2,12 +2,14 @@ const db = require('../db');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const smsService = require('../utils/smsService');
+const auditService = require('../utils/auditService');
 
-/**
- * 💡 Helper: Executes the AI Python script via child_process
- * Using spawn is superior to exec for passing large arrays (like 1,000 face vectors) via stdin.
- */
-exports.runAIProcess = (mode, inputData) => {
+class AttendanceController {
+  /**
+   * 💡 Helper: Executes the AI Python script via child_process
+   * Using spawn is superior to exec for passing large arrays (like 1,000 face vectors) via stdin.
+   */
+  static runAIProcess(mode, inputData) {
   return new Promise((resolve, reject) => {
     // 💡 Cross-Platform Logic: Use venv on Windows, system python3 in Docker/Linux
     const pythonPath = process.platform === 'win32' 
@@ -52,12 +54,12 @@ exports.runAIProcess = (mode, inputData) => {
       }
     });
   });
-};
+  }
 
-/**
- * 🛡️ Industrial Logic: Handles QR code scanning and triggers automatic SMS.
- */
-exports.markAttendanceByQR = async (req, res) => {
+  /**
+   * 🛡️ Industrial Logic: Handles QR code scanning and triggers automatic SMS.
+   */
+  async markAttendanceByQR(req, res) {
   const { qr_code_key, course_id } = req.body;
 
   if (!qr_code_key || !course_id) {
@@ -127,14 +129,13 @@ exports.markAttendanceByQR = async (req, res) => {
     console.error('❌ QR Attendance Error:', error.message);
     res.status(500).json({ error: 'පැමිණීම සටහන් කිරීම අසාර්ථකයි.' });
   }
-};
+  }
 
-/**
- * 🛡️ Zoned Validation Logic (The "1,000 Student Solution")
- * Aggregates headcount from multiple zone cameras and compares to QR data.
- */
-exports.validateAttendanceWithZones = async (req, res) => {
-  const auditService = require('../utils/auditService');
+  /**
+   * 🛡️ Zoned Validation Logic (The "1,000 Student Solution")
+   * Aggregates headcount from multiple zone cameras and compares to QR data.
+   */
+  async validateAttendanceWithZones(req, res) {
   const { session_id, hall_id } = req.body;
 
   if (!session_id || !hall_id) {
@@ -154,7 +155,7 @@ exports.validateAttendanceWithZones = async (req, res) => {
     }
 
     // 2. Pass 1: Headcount (Fast YOLO Count)
-    const headcountResult = await runAIProcess('headcount', { zones });
+    const headcountResult = await AttendanceController.runAIProcess('headcount', { zones });
     const zoneResults = headcountResult.zone_breakdown;
     const totalAIHeadcount = headcountResult.total_ai_headcount;
 
@@ -188,7 +189,7 @@ exports.validateAttendanceWithZones = async (req, res) => {
       );
 
       // Execute verification pass
-      const verificationResult = await runAIProcess('verify', { 
+      const verificationResult = await AttendanceController.runAIProcess('verify', { 
         zones, 
         expected_students: studentsRes.rows 
       });
@@ -250,12 +251,12 @@ exports.validateAttendanceWithZones = async (req, res) => {
     console.error('❌ Zoned Attendance Error:', error.message);
     res.status(500).json({ error: 'කලාපීය පැමිණීම පරීක්ෂා කිරීම අසාර්ථකයි.' });
   }
-};
+  }
 
-/**
- * 🛡️ Retrieves historical discrepancy logs for Admin review.
- */
-exports.getSuspiciousLogs = async (req, res) => {
+  /**
+   * 🛡️ Retrieves historical discrepancy logs for Admin review.
+   */
+  async getSuspiciousLogs(req, res) {
   const { startDate, endDate } = req.query;
   let query = `
     SELECT sl.*, c.course_name as class_name 
@@ -284,12 +285,12 @@ exports.getSuspiciousLogs = async (req, res) => {
     console.error('❌ Suspicious logs retrieval error:', err);
     res.status(500).json({ error: 'විසංවාද වාර්තා ලබා ගැනීමට නොහැකි විය.' });
   }
-};
+  }
 
-/**
- * 🛠️ Bulk resolves discrepancy logs (System Audit helper).
- */
-exports.bulkResolveLogs = async (req, res) => {
+  /**
+   * 🛠️ Bulk resolves discrepancy logs (System Audit helper).
+   */
+  async bulkResolveLogs(req, res) {
   const { logIds, comment } = req.body;
   if (!logIds || !Array.isArray(logIds) || logIds.length === 0) {
     return res.status(400).json({ message: "නිරාකරණය කිරීමට වාර්තා තෝරා නොමැත." });
@@ -305,12 +306,12 @@ exports.bulkResolveLogs = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+  }
 
-/**
- * ✅ Resolves a discrepancy log with Admin comments.
- */
-exports.resolveLog = async (req, res) => {
+  /**
+   * ✅ Resolves a discrepancy log with Admin comments.
+   */
+  async resolveLog(req, res) {
   const { logId } = req.params;
   const { comment } = req.body;
   try {
@@ -323,12 +324,12 @@ exports.resolveLog = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+  }
 
-/**
- * 📊 Get Study Area Occupancy per Hour for HomeTab.
- */
-exports.getLibraryOccupancyStats = async (req, res) => {
+  /**
+   * 📊 Get Study Area Occupancy per Hour for HomeTab.
+   */
+  async getLibraryOccupancyStats(req, res) {
   try {
     const query = `
       SELECT TO_CHAR(actual_arrival_time, 'HH24:00') AS hour, COUNT(*) AS count
@@ -339,12 +340,12 @@ exports.getLibraryOccupancyStats = async (req, res) => {
     const result = await db.pool.query(query);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
-};
+  }
 
-/**
- * 🔔 Sends an SMS alert to parents when a face verification discrepancy is found.
- */
-exports.sendDiscrepancyAlert = async (req, res) => {
+  /**
+   * 🔔 Sends an SMS alert to parents when a face verification discrepancy is found.
+   */
+  async sendDiscrepancyAlert(req, res) {
   const { student_id, session_id } = req.body;
 
   if (!student_id || !session_id) {
@@ -378,12 +379,12 @@ exports.sendDiscrepancyAlert = async (req, res) => {
     console.error('❌ Discrepancy SMS Error:', error.message);
     res.status(500).json({ error: 'SMS යැවීම අසාර්ථකයි.' });
   }
-};
+  }
 
-/**
- * 🔔 Sends bulk SMS alerts to parents when multiple discrepancies are found.
- */
-exports.bulkSendDiscrepancyAlerts = async (req, res) => {
+  /**
+   * 🔔 Sends bulk SMS alerts to parents when multiple discrepancies are found.
+   */
+  async bulkSendDiscrepancyAlerts(req, res) {
   const { student_ids, session_id } = req.body;
 
   if (!student_ids || !Array.isArray(student_ids) || !session_id) {
@@ -414,12 +415,12 @@ exports.bulkSendDiscrepancyAlerts = async (req, res) => {
     console.error('❌ Bulk Discrepancy SMS Error:', error.message);
     res.status(500).json({ error: 'Bulk SMS යැවීම අසාර්ථකයි.' });
   }
-};
+  }
 
-/**
- * 📊 Get Total Suspicious Incidents for HomeTab.
- */
-exports.getTotalSuspiciousIncidents = async (req, res) => {
+  /**
+   * 📊 Get Total Suspicious Incidents for HomeTab.
+   */
+  async getTotalSuspiciousIncidents(req, res) {
   try {
     const query = `
       SELECT 
@@ -433,13 +434,13 @@ exports.getTotalSuspiciousIncidents = async (req, res) => {
       resolved: Number(result.rows[0].resolved) 
     });
   } catch (err) { res.status(500).json({ error: err.message }); }
-};
+  }
 
-/**
- * 🌡️ Get Real-time Hall Occupancy for Heat Map.
- * Aggregates student arrivals per hall per hour.
- */
-exports.getHallOccupancyStats = async (req, res) => {
+  /**
+   * 🌡️ Get Real-time Hall Occupancy for Heat Map.
+   * Aggregates student arrivals per hall per hour.
+   */
+  async getHallOccupancyStats(req, res) {
   try {
     const query = `
       SELECT 
@@ -456,13 +457,13 @@ exports.getHallOccupancyStats = async (req, res) => {
     const result = await db.pool.query(query);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
-};
+  }
 
-/**
- * 🚨 Get Currently Active Congestions.
- * Returns halls that are currently being tracked for over-capacity.
- */
-exports.getActiveCongestions = async (req, res) => {
+  /**
+   * 🚨 Get Currently Active Congestions.
+   * Returns halls that are currently being tracked for over-capacity.
+   */
+  async getActiveCongestions(req, res) {
   try {
     const query = `
       SELECT h.hall_name, (EXTRACT(EPOCH FROM (NOW() - ct.first_detected_at))/60)::INT as minutes_congested
@@ -472,13 +473,13 @@ exports.getActiveCongestions = async (req, res) => {
     const result = await db.pool.query(query);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
-};
+  }
 
-/**
- * 🔔 Hall Safety Drill Mode.
- * Sends a test SMS to all registered staff phone numbers.
- */
-exports.triggerSafetyDrill = async (req, res) => {
+  /**
+   * 🔔 Hall Safety Drill Mode.
+   * Sends a test SMS to all registered staff phone numbers.
+   */
+  async triggerSafetyDrill(req, res) {
   try {
     const settingsRes = await db.pool.query("SELECT setting_value FROM System_Settings WHERE setting_key = 'safety_staff_phones'");
     const staffPhones = (settingsRes.rows[0]?.setting_value || '').split(',');
@@ -491,102 +492,102 @@ exports.triggerSafetyDrill = async (req, res) => {
 
     res.json({ message: "Safety Drill සාර්ථකව ආරම්භ කළා! සියලුම කාර්ය මණ්ඩලයට SMS පණිවිඩ යවන ලදී." });
   } catch (error) { res.status(500).json({ error: error.message }); }
-};
-
-/**
- * Helper: Handle over-capacity hall congestion
- */
-const handleOverCapacityHall = async (hall, tracker, thresholdMinutes, staffPhones) => {
-  if (tracker.rows.length === 0) {
-    // First time detecting over-capacity
-    await db.pool.query('INSERT INTO Hall_Congestion_Tracker (hall_id, first_detected_at) VALUES ($1, NOW())', [hall.hall_id]);
-  } else {
-    const { first_detected_at, sms_sent } = tracker.rows[0];
-    const diffMinutes = (Date.now() - new Date(first_detected_at).getTime()) / (1000 * 60);
-
-    if (diffMinutes >= thresholdMinutes && !sms_sent) {
-      await notifyStaffOfCongestion(hall, thresholdMinutes, staffPhones, first_detected_at);
-    }
-  }
-};
-
-/**
- * Helper: Send congestion notifications to staff
- */
-const notifyStaffOfCongestion = async (hall, thresholdMinutes, staffPhones, firstDetectedAt) => {
-  console.log(`🚨 [Alert] Hall ${hall.hall_name} is congested! Sending SMS to staff.`);
-  
-  const message = `🚨 CONGESTION ALERT: Hall ${hall.hall_name} has ${hall.current_count} students (Capacity: ${hall.capacity}). Over-capacity for ${thresholdMinutes}+ minutes.`;
-  
-  for (const phone of staffPhones) {
-    await smsService.sendCustomSMS(phone.trim(), message); 
   }
 
-  const logRes = await db.pool.query(
-    'INSERT INTO Hall_Congestion_Logs (hall_id, peak_count, capacity, started_at) VALUES ($1, $2, $3, $4) RETURNING log_id',
-    [hall.hall_id, hall.current_count, hall.capacity, firstDetectedAt]
-  );
-  
-  await db.pool.query('UPDATE Hall_Congestion_Tracker SET sms_sent = TRUE, active_log_id = $1 WHERE hall_id = $2', [logRes.rows[0].log_id, hall.hall_id]);
-};
+  /**
+   * Helper: Handle over-capacity hall congestion
+   */
+  static async handleOverCapacityHall(hall, tracker, thresholdMinutes, staffPhones) {
+    if (tracker.rows.length === 0) {
+      // First time detecting over-capacity
+      await db.pool.query('INSERT INTO Hall_Congestion_Tracker (hall_id, first_detected_at) VALUES ($1, NOW())', [hall.hall_id]);
+    } else {
+      const { first_detected_at, sms_sent } = tracker.rows[0];
+      const diffMinutes = (Date.now() - new Date(first_detected_at).getTime()) / (1000 * 60);
 
-/**
- * Helper: Handle safe capacity hall
- */
-const handleSafeCapacityHall = async (hallId) => {
-  const tracker = await db.pool.query('SELECT active_log_id FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hallId]);
-  if (tracker.rows[0]?.active_log_id) {
-    await db.pool.query(
-      'UPDATE Hall_Congestion_Logs SET ended_at = NOW(), duration_minutes = EXTRACT(EPOCH FROM (NOW() - started_at))/60 WHERE log_id = $1',
-      [tracker.rows[0].active_log_id]
-    );
-  }
-  await db.pool.query('DELETE FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hallId]);
-};
-
-/**
- * 🚨 Automated Safety Check: Detects and notifies staff of hall congestion.
- * Triggers if a hall is over-capacity for more than 30 minutes.
- */
-exports.processCongestionWarnings = async () => {
-  try {
-    // 1. Get current occupancy and capacity for all halls with active classes
-    const statusQuery = `
-      SELECT h.hall_id, h.hall_name, h.capacity, COUNT(sal.log_id) as current_count
-      FROM Halls h
-      JOIN Class_Schedules cs ON h.hall_id = cs.hall_id
-      JOIN Student_Attendance_Logs sal ON cs.course_id = sal.course_id
-      WHERE DATE(sal.scanned_at) = CURRENT_DATE
-        AND CURRENT_TIME BETWEEN cs.start_time AND cs.end_time
-      GROUP BY h.hall_id, h.hall_name, h.capacity;
-    `;
-    const { rows } = await db.pool.query(statusQuery);
-
-    // 💡 Fetch dynamic safety thresholds and contact info
-    const settingsRes = await db.pool.query("SELECT setting_key, setting_value FROM System_Settings WHERE setting_key IN ('safety_congestion_threshold', 'safety_staff_phones')");
-    const settingsMap = Object.fromEntries(settingsRes.rows.map(s => [s.setting_key, s.setting_value]));
-    const thresholdMinutes = Number.parseInt(settingsMap.safety_congestion_threshold || '30', 10);
-    const staffPhones = (settingsMap.safety_staff_phones || '0771234567').split(',');
-
-    for (const hall of rows) {
-      const isOverCapacity = hall.current_count > hall.capacity;
-
-      if (isOverCapacity) {
-        const tracker = await db.pool.query('SELECT * FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hall.hall_id]);
-        await handleOverCapacityHall(hall, tracker, thresholdMinutes, staffPhones);
-      } else {
-        await handleSafeCapacityHall(hall.hall_id);
+      if (diffMinutes >= thresholdMinutes && !sms_sent) {
+        await this.notifyStaffOfCongestion(hall, thresholdMinutes, staffPhones, first_detected_at);
       }
     }
-  } catch (error) {
-    console.error('❌ Congestion processing error:', error.message);
   }
-};
 
-/**
- * 🔮 Get Predictive Library Occupancy based on historical averages.
- */
-exports.getPredictiveOccupancy = async (req, res) => {
+  /**
+   * Helper: Send congestion notifications to staff
+   */
+  static async notifyStaffOfCongestion(hall, thresholdMinutes, staffPhones, firstDetectedAt) {
+    console.log(`🚨 [Alert] Hall ${hall.hall_name} is congested! Sending SMS to staff.`);
+    
+    const message = `🚨 CONGESTION ALERT: Hall ${hall.hall_name} has ${hall.current_count} students (Capacity: ${hall.capacity}). Over-capacity for ${thresholdMinutes}+ minutes.`;
+    
+    for (const phone of staffPhones) {
+      await smsService.sendCustomSMS(phone.trim(), message); 
+    }
+
+    const logRes = await db.pool.query(
+      'INSERT INTO Hall_Congestion_Logs (hall_id, peak_count, capacity, started_at) VALUES ($1, $2, $3, $4) RETURNING log_id',
+      [hall.hall_id, hall.current_count, hall.capacity, firstDetectedAt]
+    );
+    
+    await db.pool.query('UPDATE Hall_Congestion_Tracker SET sms_sent = TRUE, active_log_id = $1 WHERE hall_id = $2', [logRes.rows[0].log_id, hall.hall_id]);
+  }
+
+  /**
+   * Helper: Handle safe capacity hall
+   */
+  static async handleSafeCapacityHall(hallId) {
+    const tracker = await db.pool.query('SELECT active_log_id FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hallId]);
+    if (tracker.rows[0]?.active_log_id) {
+      await db.pool.query(
+        'UPDATE Hall_Congestion_Logs SET ended_at = NOW(), duration_minutes = EXTRACT(EPOCH FROM (NOW() - started_at))/60 WHERE log_id = $1',
+        [tracker.rows[0].active_log_id]
+      );
+    }
+    await db.pool.query('DELETE FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hallId]);
+  }
+
+  /**
+   * 🚨 Automated Safety Check: Detects and notifies staff of hall congestion.
+  * Triggers if a hall is over-capacity for more than 30 minutes.
+  */
+  static async processCongestionWarnings() {
+    try {
+      // 1. Get current occupancy and capacity for all halls with active classes
+      const statusQuery = `
+        SELECT h.hall_id, h.hall_name, h.capacity, COUNT(sal.log_id) as current_count
+        FROM Halls h
+        JOIN Class_Schedules cs ON h.hall_id = cs.hall_id
+        JOIN Student_Attendance_Logs sal ON cs.course_id = sal.course_id
+        WHERE DATE(sal.scanned_at) = CURRENT_DATE
+          AND CURRENT_TIME BETWEEN cs.start_time AND cs.end_time
+        GROUP BY h.hall_id, h.hall_name, h.capacity;
+      `;
+      const { rows } = await db.pool.query(statusQuery);
+
+      // 💡 Fetch dynamic safety thresholds and contact info
+      const settingsRes = await db.pool.query("SELECT setting_key, setting_value FROM System_Settings WHERE setting_key IN ('safety_congestion_threshold', 'safety_staff_phones')");
+      const settingsMap = Object.fromEntries(settingsRes.rows.map(s => [s.setting_key, s.setting_value]));
+      const thresholdMinutes = Number.parseInt(settingsMap.safety_congestion_threshold || '30', 10);
+      const staffPhones = (settingsMap.safety_staff_phones || '0771234567').split(',');
+
+      for (const hall of rows) {
+        const isOverCapacity = hall.current_count > hall.capacity;
+
+        if (isOverCapacity) {
+          const tracker = await db.pool.query('SELECT * FROM Hall_Congestion_Tracker WHERE hall_id = $1', [hall.hall_id]);
+          await this.handleOverCapacityHall(hall, tracker, thresholdMinutes, staffPhones);
+        } else {
+          await this.handleSafeCapacityHall(hall.hall_id);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Congestion processing error:', error.message);
+    }
+  }
+
+  /**
+   * 🔮 Get Predictive Library Occupancy based on historical averages.
+   */
+  async getPredictiveOccupancy(req, res) {
   try {
     const query = `
       SELECT hour, ROUND(AVG(cnt)) AS predicted_count
@@ -601,9 +602,9 @@ exports.getPredictiveOccupancy = async (req, res) => {
     const result = await db.pool.query(query);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
-};
+  }
 
-exports.updateAIHeadcount = async (req, res) => {
+  async updateAIHeadcount(req, res) {
   const { session_id, ai_headcount } = req.body;
 
   if (!session_id || ai_headcount === undefined) {
@@ -640,9 +641,9 @@ exports.updateAIHeadcount = async (req, res) => {
     console.error('❌ AI Attendance Error:', error.message);
     res.status(500).json({ error: 'AI දත්ත යාවත්කාලීන කිරීම අසාර්ථකයි.' });
   }
-};
+  }
 
-exports.getAttendanceMaster = async (req, res) => {
+  async getAttendanceMaster(req, res) {
   const { sessionId } = req.params;
   try {
     const result = await db.pool.query('SELECT * FROM Attendance_Master WHERE session_id = $1', [sessionId]);
@@ -650,12 +651,12 @@ exports.getAttendanceMaster = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+  }
 
-/**
- * 📊 Get Overall AI Validation Success Rate for Dashboard.
- */
-exports.getAIHealthStats = async (req, res) => {
+  /**
+   * 📊 Get Overall AI Validation Success Rate for Dashboard.
+   */
+  async getAIHealthStats(req, res) {
   try {
     const query = `
       SELECT 
@@ -666,7 +667,7 @@ exports.getAIHealthStats = async (req, res) => {
     `;
     const [statsRes, aiStatus] = await Promise.all([
       db.pool.query(query),
-      exports.runAIProcess('status', {})
+      AttendanceController.runAIProcess('status', {})
     ]);
     const stats = statsRes.rows[0];
     
@@ -684,4 +685,7 @@ exports.getAIHealthStats = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+  }
+}
+
+module.exports = new AttendanceController();

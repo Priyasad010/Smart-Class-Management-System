@@ -35,11 +35,11 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
         <nav style={{ display: 'flex', flexDirection: 'column' }}>
           <button type="button" onClick={() => setActiveTab('home')} style={getButtonStyle('home')}>🏠 මුල් පිටුව (Home)</button>
           
-          {(isAdmin || isCounterPerson || isTeacher) && (
+          {['Admin', 'Counter Person', 'Teacher'].includes(role) && (
             <button type="button" onClick={() => setActiveTab('students')} style={getButtonStyle('students')}>🧑‍🎓 ශිෂ්‍ය ලේඛනය (Registry)</button>
           )}
-          
-          {isCounterPerson && (
+
+          {role === 'Counter Person' && (
             <button type="button" onClick={() => setActiveTab('approvals')} style={getButtonStyle('approvals')}>⏳ ශිෂ්‍ය අනුමැතිය (Approvals)</button>
           )}
 
@@ -66,7 +66,7 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
           )}
           <button type="button" onClick={() => setActiveTab('study_area')} style={getButtonStyle('study_area')}>📖 අධ්‍යයන අංශය (Study Area)</button>
           
-          {isAdmin && (
+          {(isAdmin || isCounterPerson) && (
             <button type="button" onClick={() => setActiveTab('payments')} style={getButtonStyle('payments')}>💰 ගෙවීම් (Payments)</button>
           )}
           

@@ -1,4 +1,4 @@
-/**
+/*
 
 -- Smart Class Management System - Complete Database Schema
 -- Database: thusithaedu_db
@@ -271,4 +271,4 @@ CREATE TABLE IF NOT EXISTS Learning_Materials (
 CREATE INDEX IF NOT EXISTS idx_student_qr ON Students(qr_code_key);
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON Student_Attendance_Logs(scanned_at);
 CREATE INDEX IF NOT EXISTS idx_payments_date ON Payments(payment_date);
-**/
+*/
