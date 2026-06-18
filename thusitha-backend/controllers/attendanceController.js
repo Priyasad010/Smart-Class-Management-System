@@ -9,7 +9,7 @@ class AttendanceController {
    * 💡 Helper: Executes the AI Python script via child_process
    * Using spawn is superior to exec for passing large arrays (like 1,000 face vectors) via stdin.
    */
-  static runAIProcess(mode, inputData) {
+  runAIProcess(mode, inputData) {
   return new Promise((resolve, reject) => {
     // 💡 Cross-Platform Logic: Use venv on Windows, system python3 in Docker/Linux
     const pythonPath = process.platform === 'win32' 
@@ -155,7 +155,7 @@ class AttendanceController {
     }
 
     // 2. Pass 1: Headcount (Fast YOLO Count)
-    const headcountResult = await AttendanceController.runAIProcess('headcount', { zones });
+    const headcountResult = await this.runAIProcess('headcount', { zones });
     const zoneResults = headcountResult.zone_breakdown;
     const totalAIHeadcount = headcountResult.total_ai_headcount;
 
@@ -189,7 +189,7 @@ class AttendanceController {
       );
 
       // Execute verification pass
-      const verificationResult = await AttendanceController.runAIProcess('verify', { 
+      const verificationResult = await this.runAIProcess('verify', { 
         zones, 
         expected_students: studentsRes.rows 
       });
@@ -667,7 +667,7 @@ class AttendanceController {
     `;
     const [statsRes, aiStatus] = await Promise.all([
       db.pool.query(query),
-      AttendanceController.runAIProcess('status', {})
+      this.runAIProcess('status', {})
     ]);
     const stats = statsRes.rows[0];
     

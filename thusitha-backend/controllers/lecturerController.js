@@ -39,7 +39,7 @@ exports.addLecturer = async (req, res) => {
 
 exports.getAllLecturers = async (req, res) => {
   try {
-    const result = await db.pool.query('SELECT * FROM Lecturers ORDER BY lecturer_name ASC');
+    const result = await db.pool.query('SELECT teacher_id as lecturer_id, teacher_name as lecturer_name, email, phone, specialization, bio FROM Teachers ORDER BY teacher_name ASC');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

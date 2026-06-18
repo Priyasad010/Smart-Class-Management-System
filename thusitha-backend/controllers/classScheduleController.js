@@ -8,10 +8,10 @@ const checkConflict = async (client, { hall_id, lecturer_id, day_of_week, start_
       cs.schedule_id,
       cs.class_name,
       h.hall_name,
-      l.lecturer_name
+      l.teacher_name as lecturer_name
     FROM Class_Schedules cs
     JOIN Halls h ON cs.hall_id = h.hall_id
-    JOIN Lecturers l ON cs.lecturer_id = l.lecturer_id
+    JOIN Teachers l ON cs.lecturer_id = l.teacher_id
     WHERE 
       ARRAY[cs.day_of_week] && $1::text[] -- Check for overlapping days
       AND (
@@ -83,7 +83,7 @@ exports.getAllClassSchedules = async (req, res) => {
       FROM Class_Schedules cs
       JOIN Courses c ON cs.course_id = c.course_id
       JOIN Subjects s ON cs.subject_id = s.subject_id
-      JOIN Lecturers l ON cs.lecturer_id = l.lecturer_id
+      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
       JOIN Halls h ON cs.hall_id = h.hall_id
       ORDER BY cs.day_of_week, cs.start_time ASC
     `;
@@ -160,7 +160,7 @@ exports.getPersonalizedSchedule = async (req, res) => {
     query = `
       SELECT cs.*, c.course_name, s.subject_name, h.hall_name
       FROM Class_Schedules cs
-      JOIN Lecturers l ON cs.lecturer_id = l.lecturer_id
+      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
       JOIN Courses c ON cs.course_id = c.course_id
       JOIN Subjects s ON cs.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
@@ -169,14 +169,14 @@ exports.getPersonalizedSchedule = async (req, res) => {
     `;
   } else if (role === 'Student') {
     query = `
-      SELECT cs.*, c.course_name, s.subject_name, h.hall_name, l.lecturer_name
+      SELECT cs.*, c.course_name, s.subject_name, h.hall_name, l.teacher_name as lecturer_name
       FROM Class_Schedules cs
       JOIN Course_Enrollments ce ON cs.course_id = ce.course_id
       JOIN Students st ON ce.student_id = st.student_id
       JOIN Courses c ON cs.course_id = c.course_id
       JOIN Subjects s ON cs.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
-      JOIN Lecturers l ON cs.lecturer_id = l.lecturer_id
+      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
       WHERE st.user_id = $1 AND ce.enrollment_status = 'Enrolled'
       ORDER BY cs.day_of_week, cs.start_time;
     `;
