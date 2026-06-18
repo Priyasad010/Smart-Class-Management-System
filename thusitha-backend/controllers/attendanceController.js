@@ -191,7 +191,8 @@ class AttendanceController {
       // Execute verification pass
       const verificationResult = await this.runAIProcess('verify', { 
         zones, 
-        expected_students: studentsRes.rows 
+        expected_students: studentsRes.rows,
+        session_id
       });
 
       // Identify "Unverified" students (Scanned but not seen in any camera zone)

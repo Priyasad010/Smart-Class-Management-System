@@ -15,7 +15,7 @@ const AttendanceValidationTab = ({ halls, activeSessions, onSendAlert, onBulkNot
     setLoading(true);
     try {
       const response = await request('/attendance/validate-zones', {
-        method: 'POST',
+        method: 'POST', // No credentials: 'include' needed here, api.js handles Authorization header
         body: JSON.stringify({ session_id: sessionId, hall_id: hallId })
       });
       setResult(response.data);

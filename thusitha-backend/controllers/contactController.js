@@ -84,3 +84,33 @@ exports.toggleImportant = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/**
+ * 🚫 Marks an inquiry as Spam.
+ */
+exports.markAsSpam = async (req, res) => {
+  const { messageId } = req.params;
+  try {
+    await db.pool.query("UPDATE Contact_Messages SET status = 'Spam', is_read = TRUE WHERE message_id = $1", [messageId]);
+    await auditService.logAction(req.user.userId, req.user.role, 'UPDATE', 'Contact_Message', Number.parseInt(messageId, 10), `Marked message ${messageId} as spam.`);
+    res.status(200).json({ message: 'පණිවිඩය Spam ලෙස සටහන් කළා!' });
+  } catch (error) {
+    console.error('❌ Mark Spam Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * 🔄 Recovers an inquiry from Spam.
+ */
+exports.recoverFromSpam = async (req, res) => {
+  const { messageId } = req.params;
+  try {
+    await db.pool.query("UPDATE Contact_Messages SET status = 'Pending' WHERE message_id = $1", [messageId]);
+    await auditService.logAction(req.user.userId, req.user.role, 'UPDATE', 'Contact_Message', Number.parseInt(messageId, 10), `Recovered message ${messageId} from spam.`);
+    res.status(200).json({ message: 'පණිවිඩය Spam වලින් සාර්ථකව ඉවත් කළා.' });
+  } catch (error) {
+    console.error('❌ Recover Spam Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};

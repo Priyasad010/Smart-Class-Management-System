@@ -4,8 +4,10 @@ const jwt = require('jsonwebtoken');
  * Middleware to verify the JWT token sent in the request header.
  */
 exports.verifyToken = (req, res, next) => {
-  // 🛡️ Look for token in Cookies first, then fall back to Header
-  const token = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) return res.status(403).json({ message: 'No token provided.' });
+
+  const token = authHeader.split(' ')[1]; // Expects "Bearer TOKEN"
   
   if (!token) return res.status(403).json({ message: 'No token provided.' });
 

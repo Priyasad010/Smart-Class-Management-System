@@ -33,7 +33,6 @@ app.disable('x-powered-by');
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:5173', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
   optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
@@ -63,6 +62,8 @@ app.use('/api/halls', hallRoutes); // New
 app.use('/api/classes', classScheduleRoutes); // New
 app.use('/api/camera-zones', cameraZoneRoutes); // New
 app.use('/api/sms', smsRoutes);
+app.use('/api/lecturers', lecturerRoutes);
+app.use('/api/promos', promoRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/settings', settingsRoutes); // New
 app.use('/api/audit', auditRoutes);

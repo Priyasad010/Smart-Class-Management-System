@@ -18,7 +18,7 @@ const CameraConfigTab = ({ halls }) => {
     }
     setLoading(true);
     try {
-      const data = await request(`/camera-zones/hall/${hallId}`);
+      const data = await request(`/camera-zones/hall/${hallId}`); // /api prefix handled by api.js
       setZones(data);
     } catch (err) {
       showNotification(`කැමරා කලාප ලබා ගැනීමට නොහැකි විය: ${err.message}`, 'error');
@@ -68,7 +68,7 @@ const CameraConfigTab = ({ halls }) => {
   const handleDelete = async (zoneId) => {
     if (!globalThis.confirm('ඔබට මෙම කැමරා කලාපය ඉවත් කිරීමට අවශ්‍යද?')) return;
     try {
-      await request(`/camera-zones/${zoneId}`, { method: 'DELETE' });
+      await request(`/camera-zones/${zoneId}`, { method: 'DELETE' }); // /api prefix handled by api.js
       showNotification('කැමරා කලාපය සාර්ථකව ඉවත් කරන ලදී!');
       fetchZones(selectedHallId);
     } catch (err) {

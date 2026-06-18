@@ -106,17 +106,18 @@ exports.getTeacherPerformance = async (req, res) => {
   try {
     const query = `
       SELECT 
-        l.lecturer_name,
+        t.teacher_name,
         COUNT(DISTINCT cs.schedule_id) AS classes_taught,
         ROUND(100 - (COUNT(sal.log_id) FILTER (WHERE sal.attendance_status = 'Late')::decimal / NULLIF(COUNT(sal.log_id), 0) * 100), 2) || '%' AS avg_punctuality,
         ROUND(COUNT(er.marks) FILTER (WHERE (er.marks::decimal / e.total_marks * 100) >= e.pass_percentage)::decimal / NULLIF(COUNT(er.marks), 0) * 100, 2) || '%' AS avg_exam_pass
-      FROM Lecturers l
-      LEFT JOIN Class_Schedules cs ON l.lecturer_id = cs.lecturer_id
-      LEFT JOIN Student_Attendance_Logs sal ON cs.course_id = sal.course_id
-      LEFT JOIN Exams e ON cs.course_id = e.course_id
+      FROM Teachers t
+      LEFT JOIN Courses c ON t.teacher_id = c.teacher_id
+      LEFT JOIN Class_Schedules cs ON c.course_id = cs.course_id
+      LEFT JOIN Student_Attendance_Logs sal ON c.course_id = sal.course_id
+      LEFT JOIN Exams e ON c.course_id = e.course_id
       LEFT JOIN Exam_Results er ON e.exam_id = er.exam_id
-      GROUP BY l.lecturer_id, l.lecturer_name
-      ORDER BY l.lecturer_name ASC;
+      GROUP BY t.teacher_id, t.teacher_name
+      ORDER BY t.teacher_name ASC;
     `;
     const result = await db.pool.query(query);
     res.status(200).json(result.rows);

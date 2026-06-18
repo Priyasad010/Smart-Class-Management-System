@@ -23,7 +23,7 @@ const ExamTab = ({ courses, onCreateExam, onUpdateExam, onDeleteExam }) => {
 
   const fetchExams = () => {
     if (formData.course_id) {
-      request(`/exams/course/${formData.course_id}`)
+      request(`/exams/course/${formData.course_id}`) // /api prefix handled by api.js
         .then(data => setExams(data || []))
         .catch(err => console.error('Error fetching exams:', err));
     }
@@ -138,8 +138,6 @@ const ExamTab = ({ courses, onCreateExam, onUpdateExam, onDeleteExam }) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exams/upload-marks`, {
         method: 'POST',
-        // 🛡️ credentials: 'include' ensures HttpOnly cookies are sent
-        credentials: 'include',
         // Note: We omit 'Content-Type' header so the browser sets the boundary for FormData
         body: uploadData,
       });

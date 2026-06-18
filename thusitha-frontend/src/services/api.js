@@ -1,35 +1,45 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
-export const request = async (endpoint, options = {}) => {
-  // LocalStorage එකෙන් Token එක ලබා ගැනීම
+export const request = async (endpoint, { body, isFormData = false, ...customConfig } = {}) => {
+  const headers = {};
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const token = localStorage.getItem('token');
-
-  const headers = {
-    ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
-    ...(token && { 'Authorization': `Bearer ${token}` }), // Token එක තිබේ නම් පමණක් එකතු කරයි
-    ...options.headers,
-  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const config = {
-    ...options,
-    headers,
+    method: body ? 'POST' : 'GET',
+    ...customConfig,
+    headers: {
+      ...headers,
+      ...customConfig.headers,
+    },
   };
 
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    
-    // Response එක සාර්ථක නැත්නම් Error එකක් throw කිරීම
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API Error: ${response.status}`);
-    }
-
-    // Response එකේ ඩේටා නැතිනම් (204 No Content වගේ නම්) හිස්ව යැවීම
-    if (response.status === 204) return null;
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`API Fetch Error [${endpoint}]:`, error);
-    throw error; // 💡 SonarQube S2486 වලට අනුව Exception එක නිවැරදිව throw කිරීම
+  if (body && !isFormData) {
+    config.body = JSON.stringify(body);
+  } else if (body && isFormData) {
+    config.body = body; // For FormData, browser sets Content-Type
   }
+
+  // Ensure endpoint starts with /api if it's not already there
+  const fullUrl = endpoint.startsWith('/api') ? `${API_URL}${endpoint}` : `${API_URL}/api${endpoint}`;
+
+  const response = await fetch(fullUrl, config);
+
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type'); // Get Content-Type header
+    if (contentType?.includes('application/json')) { // Use optional chaining
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API Error: ${response.status}`);
+    } else {
+      throw new Error(`API Error: ${response.status} - Server returned non-JSON response.`);
+    }
+  }
+
+  return await response.json();
 };

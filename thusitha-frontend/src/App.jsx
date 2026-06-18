@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/LandingPage/LandingPage';
 import LoginPage from './pages/Login/LoginPage';
 import Dashboard from './pages/Dashboard/Dashboard';
+import CoursesPage from './pages/LandingPage/CoursesPage';
+import TeachersPage from './pages/LandingPage/TeachersPage'; // Import TeachersPage
 import { NotificationProvider } from './context/NotificationContext';
 
 function App() {
@@ -13,6 +15,12 @@ function App() {
           {/* Public Landing Page as the root */}
           <Route path="/" element={<LandingPage />} />
           
+          {/* Public Courses Discovery Page */}
+          <Route path="/courses" element={<CoursesPage />} />
+
+          {/* Public Teachers Discovery Page */}
+          <Route path="/teachers" element={<TeachersPage />} /> {/* Add route for TeachersPage */}
+
           {/* Dedicated Login Page */}
           <Route path="/login" element={<LoginPage />} />
           

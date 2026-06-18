@@ -8,7 +8,7 @@ import confetti from 'canvas-confetti';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Title, Tooltip, Legend, ScatterController, BubbleController);
 
-const HomeTab = ({ username, studentCount, userCount, revenueData, attendanceData, occupancyData, resolutionSummary, analyticsData, teacherPerformanceData, correlationData, hallUtilization, hallOccupancyData, predictiveOccupancyData, activeCongestions }) => {
+const HomeTab = ({ username, studentCount, userCount, revenueData, attendanceData, occupancyData, resolutionSummary, analyticsData, teacherPerformanceData, correlationData, hallUtilization, hallOccupancyData, predictiveOccupancyData, activeCongestions, discrepancyChartData }) => {
   
   // 🏆 Calculate Top 10 Students Logic
   const topStudents = [...(correlationData || [])]
@@ -207,7 +207,7 @@ const HomeTab = ({ username, studentCount, userCount, revenueData, attendanceDat
   };
 
   return (
-    <div className="printable-content">
+    <div className="printable-content" style={{ fontFamily: 'Noto Sans Sinhala, Segoe UI, Tahoma, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <img src="/Project%20LOGO.png" alt="Logo" style={{ width: '45px', height: '45px' }} />
@@ -374,7 +374,7 @@ const HomeTab = ({ username, studentCount, userCount, revenueData, attendanceDat
       <div style={{ marginTop: '30px', backgroundColor: 'white', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
         <h3 style={{ color: '#d32f2f', marginBottom: '20px' }}>🏛️ ශාලා අනුව පැමිණීමේ විසංවාද (Hall Discrepancies)</h3>
         <div style={{ height: '300px' }}>
-          <Line 
+          <Line
             data={discrepancyChartData}
             options={{ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }}
           />
@@ -459,6 +459,7 @@ HomeTab.propTypes = {
   hallOccupancyData: PropTypes.array,
   predictiveOccupancyData: PropTypes.array,
   activeCongestions: PropTypes.array,
+  discrepancyChartData: PropTypes.object.isRequired, // Add this propType
 };
 
 export default HomeTab;

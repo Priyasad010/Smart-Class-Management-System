@@ -136,11 +136,11 @@ pg_dump -U smartclass -d thusithaedu_db > backup.sql
 ### Restore Database
 
 ```bash
-# Using Docker
-docker-compose exec database psql -U smartclass -d smartclass_db < backup.sql
+# Using Docker (Note: Ensure thusithaedu_db exists or create it first)
+docker compose exec database psql -U smartclass -d thusithaedu_db < backup.sql
 
 # Using local PostgreSQL
-psql -U smartclass -d smartclass_db < backup.sql
+psql -U smartclass -d thusithaedu_db < backup.sql
 ```
 
 ---

@@ -19,19 +19,14 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
+    console.log('Generated JWT token in authController:', token); // Debug: Check if token is generated
 
     // 📋 Industrial Standard: Log the successful login
     await auditService.logAction(user.user_id, user.role, 'LOGIN', 'User', user.user_id, `User ${username} logged into the system.`);
 
-    // � Set JWT in a Secure, HttpOnly Cookie
-    res.cookie('token', token, {
-      httpOnly: true, // Prevents JavaScript access (XSS protection)
-      secure: true,   // Only sent over HTTPS
-      sameSite: 'strict', // CSRF protection
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
-
     res.json({
+      success: true,
+      token: token, // Return the JWT token in the response body
       message: 'සාර්ථකව ඇතුළු විය!',
       user: { id: user.user_id, username: user.username, role: user.role }
     });

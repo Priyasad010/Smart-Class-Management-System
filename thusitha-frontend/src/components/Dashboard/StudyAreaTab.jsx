@@ -22,7 +22,7 @@ const StudyAreaTab = ({ students, seats, onBook, onCheckIn, onCheckOut }) => {
   const handleCheckOut = async (bookingId, seatId) => {
     if (!globalThis.confirm('ඔබට මෙම අසුන නිදහස් කිරීමට අවශ්‍යද?')) return;
     try {
-      await request(`/study-area/check-out/${bookingId}`, {
+      await request(`/study-area/check-out/${bookingId}`, { // /api prefix handled by api.js
         method: 'POST',
         body: JSON.stringify({ seat_id: seatId })
       });

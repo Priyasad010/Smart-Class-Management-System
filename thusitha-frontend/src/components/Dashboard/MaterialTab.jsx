@@ -14,7 +14,7 @@ const MaterialTab = ({ courses }) => {
 
   useEffect(() => {
     if (selectedCourse) {
-      request(`/materials/${selectedCourse}`)
+      request(`/materials/${selectedCourse}`) // /api prefix handled by api.js
         .then(data => setMaterials(data || []))
         .catch(err => console.error(err));
       

@@ -27,9 +27,9 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
   return (
     <div style={{ width: '260px', backgroundColor: '#1a237e', color: 'white', display: 'flex', flexDirection: 'column', padding: '20px', justifyContent: 'space-between', boxSizing: 'border-box' }}>
       <div>
-        <div style={{ textAlign: 'center', marginBottom: '30px', borderBottom: '1px solid #3f51b5', paddingBottom: '20px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
           <img src="/Project%20LOGO.png" alt="Thusitha Logo" style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '10px', backgroundColor: 'white', padding: '5px' }} />
-          <h2 style={{ margin: 0, fontSize: '18px' }}>Thusitha Smart Class</h2>
+          <h2 style={{ margin: 0, fontSize: '18px' }}>Thusitha Smart Academy</h2>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column' }}>

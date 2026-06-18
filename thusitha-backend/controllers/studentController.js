@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const path = require('node:path');
 
 const auditService = require('../utils/auditService');
-const { runAIProcess } = require('./attendanceController');
+const attendanceController = require('./attendanceController');
 
 // 💡 Moodle Integration Placeholder
 const createMoodleAccount = async (studentData) => {
@@ -22,7 +22,7 @@ exports.generateFaceEncoding = async (req, res) => {
 
     if (!photoPath) return res.status(400).json({ message: "ශිෂ්‍යයාට ඡායාරූපයක් එක් කර නැත." });
 
-    const aiResult = await runAIProcess('encode', { image_path: path.resolve(photoPath) });
+    const aiResult = await attendanceController.runAIProcess('encode', { image_path: path.resolve(photoPath) });
     
     await db.pool.query('UPDATE Students SET face_encoding = $1 WHERE student_id = $2', [JSON.stringify(aiResult.encoding), studentId]);
     
@@ -50,7 +50,7 @@ exports.bulkGenerateEncodings = async (req, res) => {
 
     for (const student of students.rows) {
       try {
-        const aiResult = await runAIProcess('encode', { image_path: path.resolve(student.profile_photo_path) });
+        const aiResult = await attendanceController.runAIProcess('encode', { image_path: path.resolve(student.profile_photo_path) });
         if (aiResult.encoding) {
           await db.pool.query('UPDATE Students SET face_encoding = $1 WHERE student_id = $2', [JSON.stringify(aiResult.encoding), student.student_id]);
           successCount++;

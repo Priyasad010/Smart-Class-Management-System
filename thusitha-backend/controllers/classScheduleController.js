@@ -6,12 +6,13 @@ const checkConflict = async (client, { hall_id, lecturer_id, day_of_week, start_
   const conflictQuery = `
     SELECT 
       cs.schedule_id,
-      cs.class_name,
+      c.course_name as class_name,
       h.hall_name,
       l.teacher_name as lecturer_name
     FROM Class_Schedules cs
+    JOIN Courses c ON cs.course_id = c.course_id
     JOIN Halls h ON cs.hall_id = h.hall_id
-    JOIN Teachers l ON cs.lecturer_id = l.teacher_id
+    JOIN Teachers l ON c.teacher_id = l.teacher_id
     WHERE 
       ARRAY[cs.day_of_week] && $1::text[] -- Check for overlapping days
       AND (
@@ -19,7 +20,7 @@ const checkConflict = async (client, { hall_id, lecturer_id, day_of_week, start_
         (cs.start_time >= $2 AND cs.start_time < $3) OR -- New schedule starts within existing
         (cs.end_time > $2 AND cs.end_time <= $3) -- New schedule ends within existing
       )
-      AND (cs.hall_id = $4 OR cs.lecturer_id = $5)
+      AND (cs.hall_id = $4 OR c.teacher_id = $5)
       ${exclude_schedule_id ? `AND cs.schedule_id != ${exclude_schedule_id}` : ''}
     LIMIT 1;
   `;
@@ -47,10 +48,10 @@ exports.createClassSchedule = async (req, res) => {
     }
 
     const query = `
-      INSERT INTO Class_Schedules (course_id, subject_id, lecturer_id, hall_id, day_of_week, start_time, end_time, class_name, capacity)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
+      INSERT INTO Class_Schedules (course_id, hall_id, day_of_week, start_time, end_time)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
     `;
-    const result = await client.query(query, [course_id, subject_id, lecturer_id, hall_id, day_of_week, start_time, end_time, class_name, capacity]);
+    const result = await client.query(query, [course_id, hall_id, day_of_week, start_time, end_time]);
 
     await client.query('COMMIT');
     await auditService.logAction(req.user.userId, req.user.role, 'CREATE', 'Class_Schedule', result.rows[0].schedule_id, `Created class schedule: ${class_name}`);
@@ -70,20 +71,18 @@ exports.getAllClassSchedules = async (req, res) => {
     const query = `
       SELECT 
         cs.schedule_id,
-        cs.class_name,
         cs.day_of_week,
         cs.start_time,
         cs.end_time,
-        cs.capacity,
         c.course_name,
         s.subject_name,
-        l.lecturer_name,
+        l.teacher_name as lecturer_name,
         h.hall_name,
-        cs.course_id, cs.subject_id, cs.lecturer_id, cs.hall_id
+        cs.course_id, c.subject_id, c.teacher_id as lecturer_id, cs.hall_id
       FROM Class_Schedules cs
       JOIN Courses c ON cs.course_id = c.course_id
-      JOIN Subjects s ON cs.subject_id = s.subject_id
-      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
+      JOIN Subjects s ON c.subject_id = s.subject_id
+      JOIN Teachers l ON c.teacher_id = l.teacher_id
       JOIN Halls h ON cs.hall_id = h.hall_id
       ORDER BY cs.day_of_week, cs.start_time ASC
     `;
@@ -115,10 +114,10 @@ exports.updateClassSchedule = async (req, res) => {
     }
 
     const query = `
-      UPDATE Class_Schedules SET course_id = $1, subject_id = $2, lecturer_id = $3, hall_id = $4, day_of_week = $5, start_time = $6, end_time = $7, class_name = $8, capacity = $9
-      WHERE schedule_id = $10 RETURNING *
+      UPDATE Class_Schedules SET course_id = $1, hall_id = $2, day_of_week = $3, start_time = $4, end_time = $5
+      WHERE schedule_id = $6 RETURNING *
     `;
-    const result = await client.query(query, [course_id, subject_id, lecturer_id, hall_id, day_of_week, start_time, end_time, class_name, capacity, id]);
+    const result = await client.query(query, [course_id, hall_id, day_of_week, start_time, end_time, id]);
 
     if (result.rows.length === 0) throw new Error('කාලසටහන හමුවුනේ නැත.');
 
@@ -160,8 +159,8 @@ exports.getPersonalizedSchedule = async (req, res) => {
     query = `
       SELECT cs.*, c.course_name, s.subject_name, h.hall_name
       FROM Class_Schedules cs
-      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
       JOIN Courses c ON cs.course_id = c.course_id
+      JOIN Teachers l ON c.teacher_id = l.teacher_id
       JOIN Subjects s ON cs.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
       WHERE l.user_id = $1
@@ -176,7 +175,7 @@ exports.getPersonalizedSchedule = async (req, res) => {
       JOIN Courses c ON cs.course_id = c.course_id
       JOIN Subjects s ON cs.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
-      JOIN Teachers l ON cs.lecturer_id = l.teacher_id
+      JOIN Teachers l ON c.teacher_id = l.teacher_id
       WHERE st.user_id = $1 AND ce.enrollment_status = 'Enrolled'
       ORDER BY cs.day_of_week, cs.start_time;
     `;

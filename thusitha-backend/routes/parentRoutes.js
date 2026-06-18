@@ -3,7 +3,8 @@ const router = express.Router();
 const parentController = require('../controllers/parentController');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 
-router.get('/', verifyToken, parentController.getAllParents);
-router.post('/register', verifyToken, checkRole(['Admin', 'Counter Person']), parentController.registerParent);
+// Protected routes for parents
+router.get('/', verifyToken, checkRole(['Admin', 'Counter Person']), parentController.getAllParents);
+router.post('/', verifyToken, checkRole(['Admin', 'Counter Person']), parentController.registerParent);
 
 module.exports = router;

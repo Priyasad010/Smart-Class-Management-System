@@ -41,6 +41,8 @@ const Dashboard = () => {
   const userData = localStorage.getItem('user');
   const user = userData ? JSON.parse(userData) : null;
 
+  console.log('Dashboard Component Rendered. User:', user);
+
   const [activeTab, setActiveTab] = useState('home');
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -75,6 +77,7 @@ const Dashboard = () => {
   const [predictiveData] = useState([]);
   const [hallOccupancyData] = useState([]);
   const [suspiciousStartDate, setSuspiciousStartDate] = useState('');
+  const [hallDiscrepancyData, setHallDiscrepancyData] = useState([]); // New state for hall discrepancy data
   const [suspiciousEndDate, setSuspiciousEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -97,6 +100,7 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
+      console.log('Fetching database data...');
       const [
         studentData,
         classData,
@@ -116,8 +120,8 @@ const Dashboard = () => {
         correlationRes,
         occuData
       ] = await Promise.all([
-        studentService.getAllStudents(),
-        classService.getAllClasses(),
+        studentService.getAllStudents(), // studentService will use the updated request helper
+        classService.getAllClasses(), // classService will use the updated request helper
         request('/parents'),
         request('/courses'),
         request('/lecturers'),
@@ -166,6 +170,8 @@ const Dashboard = () => {
       if (user.role === 'Admin') {
         const hallUtilData = await request('/reports/hall-utilization');
         setHallUtilization(hallUtilData || []);
+        // Assuming hallUtilData contains mismatch_count for discrepancy chart
+        setHallDiscrepancyData(hallUtilData || []);
       }
 
       // පද්ධති සැකසුම් (Admin Only)
@@ -206,6 +212,7 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error('Dashboard Fetch Error:', err);
+      console.log('Setting error state:', err.message);
       setError('දත්ත ලබා ගැනීමේදී දෝෂයක් සිදුවිය. කරුණාකර පසුව නැවත උත්සාහ කරන්න.');
     } finally {
       setLoading(false);
@@ -214,11 +221,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('User detected in useEffect, initiating data fetch.');
+      console.log('Token in localStorage at Dashboard useEffect:', localStorage.getItem('token')); // Corrected typo: aconsole to console
       fetchDatabaseData();
+    } else {
+      console.log('No user detected in useEffect, redirecting to login.');
     }
   }, [activeTab, punctualityStartDate, punctualityEndDate, punctualityCourse, suspiciousStartDate, suspiciousEndDate]); // Re-fetch when filters change
 
   if (!user) {
+    console.log('User is null, navigating to /');
     return <Navigate to="/" />;
   }
 
@@ -758,7 +770,24 @@ const Dashboard = () => {
     }
   };
 
+  // Define discrepancyChartData for HomeTab
+  const discrepancyChartData = {
+    labels: (hallDiscrepancyData || []).map(h => h.hall_name),
+    datasets: [
+      {
+        label: 'විසංවාද සංඛ්‍යාව (Discrepancy Count)',
+        data: (hallDiscrepancyData || []).map(h => h.mismatch_count || 0),
+        backgroundColor: 'rgba(211, 47, 47, 0.5)',
+        borderColor: '#d32f2f',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }
+    ]
+  };
+
   const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove token from localStorage
     localStorage.clear();
     navigate('/');
   };
@@ -785,6 +814,7 @@ const Dashboard = () => {
         </div>
 
         <div style={{ padding: '30px', flex: 1 }}>
+          {console.log('Dashboard Main Content - Loading:', loading, 'Error:', error, 'Active Tab:', activeTab)}
           {error && <div style={{ color: '#d32f2f', backgroundColor: '#ffebee', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{error}</div>}
           {loading && <div style={{ color: '#1a237e', fontWeight: 'bold' }}>දත්ත පූරණය වෙමින් පවතී...</div>}
 
@@ -801,6 +831,7 @@ const Dashboard = () => {
               activeCongestions={activeCongestions}
               predictiveOccupancyData={predictiveData}
               correlationData={correlationData}
+              discrepancyChartData={discrepancyChartData} // Pass the new prop here
               hallOccupancyData={hallOccupancyData}
               hallUtilization={hallUtilization}
             />
@@ -1001,25 +1032,25 @@ const Dashboard = () => {
 
       {/* ADD STUDENT MODAL */}
       {showAddModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }}>
-          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '10px', width: '400px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle}>
             <h3 style={{ margin: '0 0 20px 0', color: '#1a237e', textAlign: 'center' }}>අලුත් ශිෂ්‍යයෙක් ඇතුළත් කිරීම</h3>
             <form onSubmit={handleAddStudent}>
               <div style={{ marginBottom: '15px' }}>
-                <label htmlFor="modal-student-id" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>Student ID</label>
-                <input id="modal-student-id" type="text" placeholder="ST001" value={studentId} onChange={(e) => setStudentId(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <label htmlFor="modal-student-id" style={modalLabelStyle}>Student ID</label>
+                <input id="modal-student-id" type="text" placeholder="ST001" value={studentId} onChange={(e) => setStudentId(e.target.value)} required style={modalInputSelectStyle} />
               </div>
               <div style={{ marginBottom: '15px' }}>
-                <label htmlFor="modal-student-name" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>ශිෂ්‍යයාගේ නම</label>
-                <input id="modal-student-name" type="text" placeholder="Dilini Kawshalya" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <label htmlFor="modal-student-name" style={modalLabelStyle}>ශිෂ්‍යයාගේ නම</label>
+                <input id="modal-student-name" type="text" placeholder="Dilini Kawshalya" value={name} onChange={(e) => setName(e.target.value)} required style={modalInputSelectStyle} />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label htmlFor="modal-student-email" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>ඊමේල් ලිපිනය</label>
-                <input id="modal-student-email" type="email" placeholder="dilini@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <label htmlFor="modal-student-email" style={modalLabelStyle}>ඊමේල් ලිපිනය</label>
+                <input id="modal-student-email" type="email" placeholder="dilini@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={modalInputSelectStyle} />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label htmlFor="modal-student-parent" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>මව්පියන් තෝරන්න</label>
-                <select id="modal-student-parent" value={selectedParent} onChange={(e) => setSelectedParent(e.target.value)} style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
+                <label htmlFor="modal-student-parent" style={modalLabelStyle}>මව්පියන් තෝරන්න</label>
+                <select id="modal-student-parent" value={selectedParent} onChange={(e) => setSelectedParent(e.target.value)} style={modalInputSelectStyle}>
                   <option value="">-- මව්පියන් තෝරන්න --</option>
                   {parents.map(p => (
                     <option key={p.parent_id} value={p.parent_id}>{p.parent_name}</option>
@@ -1027,8 +1058,8 @@ const Dashboard = () => {
                 </select>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} style={{ padding: '8px 15px', border: '1px solid #ccc', background: 'none', borderRadius: '4px', cursor: 'pointer' }}>අවලංගු කරන්න</button>
-                <button type="submit" disabled={submitLoading} style={{ padding: '8px 15px', background: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                <button type="button" onClick={() => setShowAddModal(false)} style={{ ...modalButtonBaseStyle, border: '1px solid #ccc', background: 'none' }}>අවලංගු කරන්න</button>
+                <button type="submit" disabled={submitLoading} style={{ ...modalButtonBaseStyle, background: '#1a237e', color: 'white', border: 'none' }}>
                   {submitLoading ? 'සුරකිමින්...' : 'සුරකින්න'}
                 </button>
               </div>
