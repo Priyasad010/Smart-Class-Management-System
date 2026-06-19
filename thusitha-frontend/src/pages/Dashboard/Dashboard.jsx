@@ -22,18 +22,11 @@ import ExamTab from '../../components/Dashboard/ExamTab';
 import ContactTab from '../../components/Dashboard/ContactTab';
 import SMSLogTab from '../../components/Dashboard/SMSLogTab';
 import MaterialTab from '../../components/Dashboard/MaterialTab';
-import PunctualityReportTab from '../../components/Dashboard/PunctualityReportTab';
-import AuditLogTab from '../../components/Dashboard/AuditLogTab';
 import ClassTab from '../../components/Dashboard/ClassTab';
-import HallUtilizationTab from '../../components/Dashboard/HallUtilizationTab';
 import TimetableTab from '../../components/Dashboard/TimetableTab';
 import SettingsTab from '../../components/Dashboard/SettingsTab';
-import SuspiciousActivityTab from '../../components/Dashboard/SuspiciousActivityTab';
-import TeacherPerformanceTab from '../../components/Dashboard/TeacherPerformanceTab';
-import CameraConfigTab from '../../components/Dashboard/CameraConfigTab';
 import AttendanceValidationTab from '../../components/Dashboard/AttendanceValidationTab';
 import PromotionTab from '../../components/Dashboard/PromotionTab';
-import AIHealthTab from '../../components/Dashboard/AIHealthTab';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -53,30 +46,12 @@ const Dashboard = () => {
   const [revenueData, setRevenueData] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
   const [smsLogs, setSmsLogs] = useState([]);
-  const [punctualityReport, setPunctualityReport] = useState([]);
   const [classSchedules, setClassSchedules] = useState([]);
-  const [hallUtilization, setHallUtilization] = useState([]);
   const [myTimetable, setMyTimetable] = useState([]);
-  const [punctualityStartDate, setPunctualityStartDate] = useState('');
-  const [punctualityEndDate, setPunctualityEndDate] = useState('');
-  const [punctualityCourse, setPunctualityCourse] = useState('');
   const [pendingStudents, setPendingStudents] = useState([]);
   const [systemSettings, setSystemSettings] = useState([]);
-  const [suspiciousLogs, setSuspiciousLogs] = useState([]);
-  const [resolutionSummary, setResolutionSummary] = useState({ pending: 0, resolved: 0 });
-  const [teacherPerformanceData, setTeacherPerformanceData] = useState([]); // New state for teacher performance
-  const [aiHealthStats, setAiHealthStats] = useState({ total_sessions: 0, success_count: 0, mismatch_count: 0, success_rate: '100' });
   const [promotions, setPromotions] = useState([]);
-  const [correlationData, setCorrelationData] = useState([]);
-  const [occupancyData, setOccupancyData] = useState([]);
-  const [activeCongestions] = useState([]);
-  const [predictiveData] = useState([]);
-  const [hallOccupancyData] = useState([]);
-  const [suspiciousStartDate, setSuspiciousStartDate] = useState('');
-  const [hallDiscrepancyData, setHallDiscrepancyData] = useState([]); // New state for hall discrepancy data
-  const [suspiciousEndDate, setSuspiciousEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -111,11 +86,8 @@ const Dashboard = () => {
         msgData,
         seatData,
         smsData,
-        auditData,
         schedulesData,
-        promoData,
-        correlationRes,
-        occuData
+        promoData
       ] = await Promise.all([
         studentService.getAllStudents(), // studentService will use the updated request helper
         classService.getAllClasses(), // classService will use the updated request helper
@@ -129,11 +101,8 @@ const Dashboard = () => {
         request('/contact/messages'),
         request('/study-area/seats'),
         request('/sms/logs'),
-        request('/audit/logs'),
         request('/classes/schedules'),
-        request('/promos'),
-        request('/reports/student-correlation'),
-        request('/attendance/occupancy-stats')
+        request('/promos')
       ]);
 
       setStudents(studentData || []);
@@ -148,43 +117,13 @@ const Dashboard = () => {
       setInquiries(msgData || []);
       setStudySeats(seatData || []);
       setSmsLogs(smsData || []);
-      setAuditLogs(auditData || []);
       setClassSchedules(schedulesData || []);
       setPromotions(promoData || []);
-      setCorrelationData(correlationRes || []);
-      setOccupancyData(occuData || []);
-
-      // 💡 Mock Teacher Performance Data for PDF Report
-      // In a real system, this would come from a backend endpoint like /reports/teacher-performance
-      setTeacherPerformanceData([
-        { teacher_name: 'Mr. Perera', classes_taught: 15, avg_punctuality: '95%', avg_exam_pass: '88%' },
-        { teacher_name: 'Ms. Silva', classes_taught: 12, avg_punctuality: '92%', avg_exam_pass: '91%' },
-        { teacher_name: 'Mr. Fernando', classes_taught: 10, avg_punctuality: '98%', avg_exam_pass: '85%' },
-      ]);
-
-
-      // ශාලා භාවිතය (Admin Only)
-      if (user.role === 'Admin') {
-        const hallUtilData = await request('/reports/hall-utilization');
-        setHallUtilization(hallUtilData || []);
-        // Assuming hallUtilData contains mismatch_count for discrepancy chart
-        setHallDiscrepancyData(hallUtilData || []);
-      }
 
       // පද්ධති සැකසුම් (Admin Only)
       if (user.role === 'Admin') {
         const settings = await request('/settings');
         setSystemSettings(settings || []);
-
-        const sLogs = await request(`/attendance/suspicious-logs?startDate=${suspiciousStartDate}&endDate=${suspiciousEndDate}`);
-        setSuspiciousLogs(sLogs || []);
-
-        // Total Suspicious Incidents for HomeTab
-        const totalSuspicious = await request('/attendance/total-suspicious');
-        setResolutionSummary(totalSuspicious || { pending: 0, resolved: 0 });
-
-        const hStats = await request('/attendance/health-stats');
-        setAiHealthStats(hStats || { total_sessions: 0, success_count: 0, mismatch_count: 0, success_rate: '100' });
       }
 
       // පෞද්ගලික කාලසටහන (Teacher/Student)
@@ -194,10 +133,6 @@ const Dashboard = () => {
       } else {
         setMyTimetable([]);
       }
-
-      // වේලානුරූපීභාවය වාර්තාව
-      const punctualityData = await request(`/reports/punctuality?startDate=${punctualityStartDate}&endDate=${punctualityEndDate}&courseId=${punctualityCourse}`);
-      setPunctualityReport(punctualityData || []);
 
       // අනුමැතිය සඳහා සිටින සිසුන්
       const pendingData = await request('/students/pending');
@@ -223,7 +158,7 @@ const Dashboard = () => {
     if (user) {
       fetchDatabaseData();
     }
-  }, [activeTab, punctualityStartDate, punctualityEndDate, punctualityCourse, suspiciousStartDate, suspiciousEndDate]); // Re-fetch when filters change
+  }, [activeTab]); // Re-fetch when filters change
 
   if (!user) {
     return <Navigate to="/" />;
@@ -234,14 +169,14 @@ const Dashboard = () => {
     e.preventDefault();
     setSubmitLoading(true);
     try {
-      await studentService.createStudent({ 
-        username: studentId, 
-        password: Math.random().toString(36).slice(-8), 
-        student_name: name, 
-        school: email, 
-        grade: 'Grade 12', 
-        qr_code_key: studentId, 
-        parent_id: selectedParent 
+      await studentService.createStudent({
+        username: studentId,
+        password: Math.random().toString(36).slice(-8),
+        student_name: name,
+        school: email,
+        grade: 'Grade 12',
+        qr_code_key: studentId,
+        parent_id: selectedParent
       });
       setShowAddModal(false);
       setStudentId('');
@@ -266,7 +201,7 @@ const Dashboard = () => {
       // Background & Style
       doc.setFillColor(26, 35, 126); // Thusitha Navy Blue
       doc.rect(0, 0, 85, 15, 'F');
-      
+
       doc.setFontSize(12);
       doc.setTextColor(255);
       doc.text('THUSITHA SMART CLASS', 42.5, 10, { align: 'center' });
@@ -481,20 +416,6 @@ const Dashboard = () => {
     }
   };
 
-  // වාර්තා තොග වශයෙන් නිරාකරණය කිරීමේ Handler එක
-  const handleBulkResolveLogs = async (logIds, comment) => {
-    try {
-      await request('/attendance/bulk-resolve', {
-        method: 'PATCH',
-        body: JSON.stringify({ logIds, comment })
-      });
-      showNotification('තෝරාගත් වාර්තා සියල්ල සාර්ථකව නිරාකරණය කළා!');
-      fetchDatabaseData();
-    } catch (err) {
-      showNotification(err.message, 'error');
-    }
-  };
-
   // Safety Drill ආරම්භ කිරීමේ Handler එක
   const handleTriggerSafetyDrill = async () => {
     if (!globalThis.confirm('Safety Drill එකක් ආරම්භ කිරීමට ඔබ වග බලා ගන්න. සියලුම කාර්ය මණ්ඩලයට SMS යවනු ලැබේ.')) return;
@@ -525,20 +446,6 @@ const Dashboard = () => {
         body: JSON.stringify({ key, value })
       });
       showNotification('සැකසුම සාර්ථකව සුරැකුණි!');
-      fetchDatabaseData();
-    } catch (err) {
-      showNotification(err.message, 'error');
-    }
-  };
-
-  // විසංවාදයක් නිරාකරණය කිරීමේ Handler එක
-  const handleResolveLog = async (logId, comment) => {
-    try {
-      await request(`/attendance/resolve-log/${logId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ comment })
-      });
-      showNotification('විසංවාදය සාර්ථකව නිරාකරණය කළා!');
       fetchDatabaseData();
     } catch (err) {
       showNotification(err.message, 'error');
@@ -765,21 +672,7 @@ const Dashboard = () => {
     }
   };
 
-  // Define discrepancyChartData for HomeTab
-  const discrepancyChartData = {
-    labels: (hallDiscrepancyData || []).map(h => h.hall_name),
-    datasets: [
-      {
-        label: 'විසංවාද සංඛ්‍යාව (Discrepancy Count)',
-        data: (hallDiscrepancyData || []).map(h => h.mismatch_count || 0),
-        backgroundColor: 'rgba(211, 47, 47, 0.5)',
-        borderColor: '#d32f2f',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      }
-    ]
-  };
+
 
   const handleLogout = () => {
     localStorage.removeItem('token'); // Remove token from localStorage
@@ -789,11 +682,11 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'Segoe UI', backgroundColor: '#f5f7fa', margin: 0 }}>
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onLogout={handleLogout} 
-        role={user.role} 
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={handleLogout}
+        role={user.role}
       />
 
       {/* MAIN CONTENT */}
@@ -814,20 +707,12 @@ const Dashboard = () => {
 
           {/* HOME TAB */}
           {!loading && activeTab === 'home' && (
-            <HomeTab 
-              username={user.username} 
-              studentCount={students.length} 
-              userCount={classes.length} 
-              revenueData={revenueData} 
+            <HomeTab
+              username={user.username}
+              studentCount={students.length}
+              userCount={classes.length}
+              revenueData={revenueData}
               attendanceData={attendanceStats}
-              resolutionSummary={resolutionSummary}
-              occupancyData={occupancyData}
-              activeCongestions={activeCongestions}
-              predictiveOccupancyData={predictiveData}
-              correlationData={correlationData}
-              discrepancyChartData={discrepancyChartData} // Pass the new prop here
-              hallOccupancyData={hallOccupancyData}
-              hallUtilization={hallUtilization}
             />
           )}
 
@@ -835,7 +720,7 @@ const Dashboard = () => {
           {!loading && activeTab === 'students' && (
             <>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-                <button 
+                <button
                   onClick={handleBulkEncode}
                   style={{ padding: '10px 20px', backgroundColor: '#455a64', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
@@ -853,13 +738,13 @@ const Dashboard = () => {
 
           {/* CLASS MANAGEMENT TAB */}
           {!loading && activeTab === 'class_management' && (
-            <ClassTab 
-              courses={realCourses} 
-              lecturers={lecturers} 
-              subjects={subjects} 
-              halls={halls} 
-              classSchedules={classSchedules} 
-              onCreateClass={handleCreateClass} 
+            <ClassTab
+              courses={realCourses}
+              lecturers={lecturers}
+              subjects={subjects}
+              halls={halls}
+              classSchedules={classSchedules}
+              onCreateClass={handleCreateClass}
               onUpdateClass={handleUpdateClass}
               onDeleteClass={handleDeleteClass}
             />
@@ -871,15 +756,15 @@ const Dashboard = () => {
 
           {/* ATTENDANCE TAB */}
           {!loading && activeTab === 'attendance' && (
-            <AttendanceTab 
-              students={getFilteredStudents()} 
+            <AttendanceTab
+              students={getFilteredStudents()}
               courses={realCourses}
               selectedCourse={selectedAttendanceCourse}
               onCourseChange={setSelectedAttendanceCourse}
-              attendanceRecords={attendanceRecords} 
-              onCheckboxChange={handleCheckboxChange} 
-              onSave={handleSaveAttendance} 
-              loading={attendanceLoading} 
+              attendanceRecords={attendanceRecords}
+              onCheckboxChange={handleCheckboxChange}
+              onSave={handleSaveAttendance}
+              loading={attendanceLoading}
             />
           )}
 
@@ -900,11 +785,11 @@ const Dashboard = () => {
 
           {/* INQUIRIES TAB */}
           {!loading && activeTab === 'inquiries' && (
-            <ContactTab 
-              messages={inquiries} 
-              onMarkRead={handleMarkRead} 
-              onMarkSpam={handleMarkSpam} 
-              onRecoverFromSpam={handleRecoverFromSpam} 
+            <ContactTab
+              messages={inquiries}
+              onMarkRead={handleMarkRead}
+              onMarkSpam={handleMarkSpam}
+              onRecoverFromSpam={handleRecoverFromSpam}
               onMarkAllRead={handleMarkAllRead}
               templates={systemSettings.filter(s => s.setting_key.startsWith('sms_tpl_')).map(s => s.setting_value)}
               onToggleImportant={handleToggleImportant}
@@ -914,62 +799,37 @@ const Dashboard = () => {
 
           {/* SMS LOGS TAB */}
           {!loading && activeTab === 'sms_logs' && (
-            <SMSLogTab 
-              logs={smsLogs} 
-              onResend={handleResendSMS} 
+            <SMSLogTab
+              logs={smsLogs}
+              onResend={handleResendSMS}
               onDelete={handleDeleteSMSLog}
               onBulkResend={handleBulkResendSMS}
               onResendFilteredFailed={handleResendFilteredFailed}
             />
           )}
-
           {/* MATERIALS TAB */}
           {!loading && activeTab === 'materials' && (
             <MaterialTab courses={realCourses} />
           )}
 
-          {/* AUDIT LOGS TAB */}
-          {!loading && activeTab === 'audit_logs' && (
-            <AuditLogTab logs={auditLogs} />
-          )}
-
           {/* PAYMENTS TAB */}
           {!loading && activeTab === 'payments' && (
-            <PaymentTab 
+            <PaymentTab
               students={students}
-              courses={realCourses} 
-              onRecordPayment={handleRecordPayment} 
-              onSendReminders={handleSendReminders}
-            />
-          )}
-
-          {/* PUNCTUALITY REPORT TAB */}
-          {!loading && activeTab === 'punctuality_report' && (
-            <PunctualityReportTab 
-              reportData={punctualityReport} 
-              startDate={punctualityStartDate}
-              endDate={punctualityEndDate}
               courses={realCourses}
-              selectedCourse={punctualityCourse}
-              onCourseChange={setPunctualityCourse}
-              onStartDateChange={setPunctualityStartDate}
-              onEndDateChange={setPunctualityEndDate}
+              onRecordPayment={handleRecordPayment}
+              onSendReminders={handleSendReminders}
             />
           )}
 
           {/* AI VALIDATION TAB */}
           {!loading && activeTab === 'ai_validation' && (
-            <AttendanceValidationTab 
-              halls={halls} 
-              activeSessions={classSchedules} 
+            <AttendanceValidationTab
+              halls={halls}
+              activeSessions={classSchedules}
               onSendAlert={handleSendDiscrepancySMS}
               onBulkNotify={handleBulkDiscrepancyAlert}
             />
-          )}
-
-          {/* HALL UTILIZATION TAB */}
-          {!loading && activeTab === 'hall_reports' && (
-            <HallUtilizationTab data={hallUtilization} />
           )}
 
           {/* MY TIMETABLE TAB */}
@@ -977,44 +837,16 @@ const Dashboard = () => {
             <TimetableTab schedules={myTimetable} role={user.role} />
           )}
 
-          {/* CAMERA CONFIG TAB */}
-          {!loading && activeTab === 'camera_config' && (
-            <CameraConfigTab halls={halls} />
-          )}
-
-          {/* SUSPICIOUS LOGS TAB */}
-          {!loading && activeTab === 'suspicious_logs' && (
-            <SuspiciousActivityTab 
-              logs={suspiciousLogs} 
-              startDate={suspiciousStartDate} 
-              endDate={suspiciousEndDate}
-              onStartDateChange={setSuspiciousStartDate}
-              onEndDateChange={setSuspiciousEndDate}
-              onResolve={handleResolveLog}
-              onBulkResolve={handleBulkResolveLogs}
-            />
-          )}
-
-          {/* SYSTEM HEALTH TAB */}
-          {!loading && activeTab === 'system_health' && (
-            <AIHealthTab stats={aiHealthStats} />
-          )}
-
           {/* PROMOTIONS TAB */}
           {!loading && activeTab === 'promos' && (
             <PromotionTab promos={promotions} onCreate={handleCreatePromo} onDelete={handleDeletePromo} />
           )}
 
-          {/* TEACHER PERFORMANCE TAB */}
-          {!loading && activeTab === 'teacher_performance' && (
-            <TeacherPerformanceTab performanceData={teacherPerformanceData} />
-          )}
-
           {/* SETTINGS TAB */}
           {!loading && activeTab === 'settings' && (
-            <SettingsTab 
-              settings={systemSettings} 
-              onUpdate={handleUpdateSetting} 
+            <SettingsTab
+              settings={systemSettings}
+              onUpdate={handleUpdateSetting}
               onCreate={handleCreateSetting}
               onDelete={handleDeleteSetting}
               onTriggerDrill={handleTriggerSafetyDrill}

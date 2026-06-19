@@ -45,14 +45,9 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
 
           {isAdmin && (
             <>
-              <button type="button" onClick={() => setActiveTab('lecturers')} style={getButtonStyle('lecturers')}>👨‍🏫 දේශකයන් කළමනාකරණය</button>
+              <button type="button" onClick={() => setActiveTab('class_management')} style={getButtonStyle('class_management')}>📚 පන්ති කළමනාකරණය (Classes)</button>
               <button type="button" onClick={() => setActiveTab('classes')} style={getButtonStyle('classes')}>📚 පන්ති සහ පරිශීලකයින්</button>
-              <button type="button" onClick={() => setActiveTab('hall_reports')} style={getButtonStyle('hall_reports')}>🏢 ශාලා වාර්තා</button>
-              <button type="button" onClick={() => setActiveTab('camera_config')} style={getButtonStyle('camera_config')}>📷 කැමරා සැකසුම්</button>
               <button type="button" onClick={() => setActiveTab('promos')} style={getButtonStyle('promos')}>📢 වෙබ් අඩවි ප්‍රවර්ධන</button>
-              <button type="button" onClick={() => setActiveTab('teacher_performance')} style={getButtonStyle('teacher_performance')}>📊 ගුරු කාර්ය සාධනය</button>
-              <button type="button" onClick={() => setActiveTab('suspicious_logs')} style={getButtonStyle('suspicious_logs')}>🛡️ සැක සහිත පැමිණීම්</button>
-              <button type="button" onClick={() => setActiveTab('system_health')} style={getButtonStyle('system_health')}>🏥 පද්ධති තත්ත්වය (Health)</button>
               <button type="button" onClick={() => setActiveTab('settings')} style={getButtonStyle('settings')}>⚙️ පද්ධති සැකසුම්</button>
             </>
           )}
@@ -80,9 +75,7 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
               <button type="button" onClick={() => setActiveTab('sms_logs')} style={getButtonStyle('sms_logs')}>📱 SMS වාර්තා</button>
             </>
           )}
-          {isAdmin && (
-            <button type="button" onClick={() => setActiveTab('audit_logs')} style={getButtonStyle('audit_logs')}>📋 විගණන වාර්තා</button>
-          )}
+
           
           <button type="button" onClick={() => setActiveTab('materials')} style={getButtonStyle('materials')}>📁 ඉගෙනුම් ද්‍රව්‍ය</button>
           
