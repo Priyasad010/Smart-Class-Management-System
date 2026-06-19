@@ -19,7 +19,6 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    console.log('Generated JWT token in authController:', token); // Debug: Check if token is generated
 
     // 📋 Industrial Standard: Log the successful login
     await auditService.logAction(user.user_id, user.role, 'LOGIN', 'User', user.user_id, `User ${username} logged into the system.`);

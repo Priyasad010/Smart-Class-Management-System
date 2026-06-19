@@ -41,8 +41,6 @@ const Dashboard = () => {
   const userData = localStorage.getItem('user');
   const user = userData ? JSON.parse(userData) : null;
 
-  console.log('Dashboard Component Rendered. User:', user);
-
   const [activeTab, setActiveTab] = useState('home');
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -100,7 +98,6 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      console.log('Fetching database data...');
       const [
         studentData,
         classData,
@@ -191,8 +188,12 @@ const Dashboard = () => {
       }
 
       // පෞද්ගලික කාලසටහන (Teacher/Student)
-      const timetableData = await request('/classes/my-timetable');
-      setMyTimetable(timetableData || []);
+      if (['Teacher', 'Student'].includes(user.role)) {
+        const timetableData = await request('/classes/my-timetable');
+        setMyTimetable(timetableData || []);
+      } else {
+        setMyTimetable([]);
+      }
 
       // වේලානුරූපීභාවය වාර්තාව
       const punctualityData = await request(`/reports/punctuality?startDate=${punctualityStartDate}&endDate=${punctualityEndDate}&courseId=${punctualityCourse}`);
@@ -212,7 +213,6 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error('Dashboard Fetch Error:', err);
-      console.log('Setting error state:', err.message);
       setError('දත්ත ලබා ගැනීමේදී දෝෂයක් සිදුවිය. කරුණාකර පසුව නැවත උත්සාහ කරන්න.');
     } finally {
       setLoading(false);
@@ -221,16 +221,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      console.log('User detected in useEffect, initiating data fetch.');
-      console.log('Token in localStorage at Dashboard useEffect:', localStorage.getItem('token')); // Corrected typo: aconsole to console
       fetchDatabaseData();
-    } else {
-      console.log('No user detected in useEffect, redirecting to login.');
     }
   }, [activeTab, punctualityStartDate, punctualityEndDate, punctualityCourse, suspiciousStartDate, suspiciousEndDate]); // Re-fetch when filters change
 
   if (!user) {
-    console.log('User is null, navigating to /');
     return <Navigate to="/" />;
   }
 
@@ -814,7 +809,6 @@ const Dashboard = () => {
         </div>
 
         <div style={{ padding: '30px', flex: 1 }}>
-          {console.log('Dashboard Main Content - Loading:', loading, 'Error:', error, 'Active Tab:', activeTab)}
           {error && <div style={{ color: '#d32f2f', backgroundColor: '#ffebee', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{error}</div>}
           {loading && <div style={{ color: '#1a237e', fontWeight: 'bold' }}>දත්ත පූරණය වෙමින් පවතී...</div>}
 

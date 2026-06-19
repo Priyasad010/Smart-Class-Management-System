@@ -26,8 +26,7 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const data = await authService.login(credentials.username, credentials.password);
-      console.log('Login successful, received data:', data);
+      await authService.login(credentials.username, credentials.password);
       showNotification('සාර්ථකව ඇතුළු විය!');
       navigate('/dashboard');
     } catch (err) {

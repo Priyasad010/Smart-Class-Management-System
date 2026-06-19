@@ -157,11 +157,11 @@ exports.getPersonalizedSchedule = async (req, res) => {
 
   if (role === 'Teacher') {
     query = `
-      SELECT cs.*, c.course_name, s.subject_name, h.hall_name
+      SELECT cs.*, c.course_name, s.subject_name, h.hall_name, l.teacher_name as lecturer_name
       FROM Class_Schedules cs
       JOIN Courses c ON cs.course_id = c.course_id
       JOIN Teachers l ON c.teacher_id = l.teacher_id
-      JOIN Subjects s ON cs.subject_id = s.subject_id
+      JOIN Subjects s ON c.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
       WHERE l.user_id = $1
       ORDER BY cs.day_of_week, cs.start_time;
@@ -173,7 +173,7 @@ exports.getPersonalizedSchedule = async (req, res) => {
       JOIN Course_Enrollments ce ON cs.course_id = ce.course_id
       JOIN Students st ON ce.student_id = st.student_id
       JOIN Courses c ON cs.course_id = c.course_id
-      JOIN Subjects s ON cs.subject_id = s.subject_id
+      JOIN Subjects s ON c.subject_id = s.subject_id
       JOIN Halls h ON cs.hall_id = h.hall_id
       JOIN Teachers l ON c.teacher_id = l.teacher_id
       WHERE st.user_id = $1 AND ce.enrollment_status = 'Enrolled'

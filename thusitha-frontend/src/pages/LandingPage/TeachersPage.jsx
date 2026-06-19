@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { request } from '../../services/api';
 
 const TeachersPage = () => {
   const navigate = useNavigate();
@@ -25,19 +26,15 @@ const TeachersPage = () => {
       root.style.width = '100%';
     }
 
-    // Fetch dynamic lecturer data from backend
-    request('/lecturers/public') // Use request helper for public endpoint
-      .then(res => { // No credentials: 'include' needed for public routes
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();})
-      .then(data => {
-        setTeachers(data || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error fetching teachers:", err);
-        setLoading(false);
-      });
+    request('/lecturers/public')
+  .then(data => {
+    setTeachers(data || []);
+    setLoading(false);
+  })
+  .catch(err => {
+    console.error("Error fetching teachers:", err);
+    setLoading(false);
+  });
   }, []);
 
   // 🔍 Filter Logic based on Specialization or Name

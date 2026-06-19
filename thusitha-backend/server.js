@@ -26,6 +26,7 @@ const auditRoutes = require('./routes/auditRoutes');
 const smsService = require('./utils/smsService'); // Import smsService
 const { initCronJobs } = require('./utils/cronJobs');
 const materialRoutes = require('./routes/materialRoutes');
+const lecturerRoutes = require('./routes/lecturerRoutes');
 
 const app = express();
 app.disable('x-powered-by');

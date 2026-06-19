@@ -5,6 +5,14 @@ const smsService = require('../utils/smsService');
 const auditService = require('../utils/auditService');
 
 class AttendanceController {
+  constructor() {
+    const methods = Object.getOwnPropertyNames(AttendanceController.prototype)
+      .filter((method) => method !== 'constructor' && typeof this[method] === 'function');
+
+    methods.forEach((method) => {
+      this[method] = this[method].bind(this);
+    });
+  }
   /**
    * 💡 Helper: Executes the AI Python script via child_process
    * Using spawn is superior to exec for passing large arrays (like 1,000 face vectors) via stdin.
@@ -38,6 +46,9 @@ class AttendanceController {
 
     pythonProcess.on('close', (code) => {
       if (code !== 0) {
+        if (mode === 'status') {
+          return reject(new Error(error || 'AI script failed to execute.'));
+        }
         console.error(`❌ AI Script Error (Code ${code}):`, error);
         return reject(new Error(error || 'AI script failed to execute.'));
       }
@@ -666,10 +677,18 @@ class AttendanceController {
         COUNT(*) FILTER (WHERE mismatch_detected = TRUE) as mismatch_count
       FROM Attendance_Master
     `;
-    const [statsRes, aiStatus] = await Promise.all([
-      db.pool.query(query),
-      this.runAIProcess('status', {})
-    ]);
+    const statsRes = await db.pool.query(query);
+    let aiStatus;
+    try {
+      aiStatus = await this.runAIProcess('status', {});
+    } catch (aiErr) {
+      aiStatus = {
+        yolo_loaded: false,
+        face_rec_enabled: false,
+        device: 'Unavailable',
+        error: aiErr.message || 'AI engine is offline'
+      };
+    }
     const stats = statsRes.rows[0];
     
     const successRate = stats.total_sessions > 0 
