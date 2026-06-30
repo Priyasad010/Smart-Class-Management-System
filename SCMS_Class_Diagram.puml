@@ -1,0 +1,452 @@
+@startuml SCMS_Class_Diagram
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2E5C8A
+    BorderColor #2E5C8A
+    FontName Arial
+}
+skinparam package {
+    BackgroundColor #F5F8FB
+    BorderColor #2E5C8A
+}
+hide circle
+left to right direction
+
+' ============ ENUMERATIONS ============
+package "Enumerations" {
+    enum UserRole {
+        ADMIN
+        COUNTER_PERSON
+        TEACHER
+        STUDENT
+    }
+
+    enum AccountStatus {
+        ACTIVE
+        INACTIVE
+        SUSPENDED
+    }
+
+    enum AttendanceMatchStatus {
+        MATCHED
+        MISMATCH_DETECTED
+        UNDER_VERIFICATION
+        RESOLVED
+    }
+
+    enum BookingStatus {
+        PENDING
+        CONFIRMED
+        AUTO_CANCELLED
+        COMPLETED
+    }
+
+    enum PaymentStatus {
+        UNPAID
+        PENDING_VERIFICATION
+        VERIFIED
+        OVERDUE
+    }
+
+    enum SmsStatus {
+        QUEUED
+        SENT
+        FAILED
+    }
+
+    enum ExamMarkStatus {
+        DRAFT
+        PUBLISHED
+    }
+}
+
+' ============ CORE USER STRUCTURE ============
+package "User Management" {
+    class User {
+        - userId : Integer
+        - username : String
+        - email : String
+        - passwordHash : String
+        - role : UserRole
+        - status : AccountStatus
+        - createdAt : DateTime
+        + login()
+        + logout()
+        + resetPassword()
+    }
+
+    class Admin {
+        - adminId : Integer
+        - userId : Integer
+        + manageUsers()
+        + manageWebsiteContent()
+        + viewSystemReports()
+    }
+
+    class CounterPerson {
+        - counterPersonId : Integer
+        - userId : Integer
+        + registerStudent()
+        + verifyPayment()
+        + manualAttendanceCorrection()
+        + sendSmsNotification()
+    }
+
+    class Teacher {
+        - teacherId : Integer
+        - userId : Integer
+        - subjectSpecialization : String
+        - profilePhotoPath : String
+        + uploadLearningMaterial()
+        + uploadExamMarks()
+        + viewAssignedClasses()
+    }
+
+    class Student {
+        - studentId : Integer
+        - userId : Integer
+        - parentId : Integer
+        - moodleUserId : String
+        - faceEncoding : JSONB
+        - profilePhotoPath : String
+        + scanQrAttendance()
+        + bookStudyArea()
+        + viewPaymentStatus()
+        + viewExamResults()
+    }
+
+    class Parent {
+        - parentId : Integer
+        - fullName : String
+        - contactNumber : String
+        - email : String
+        + receiveSmsNotification()
+    }
+}
+
+' ============ ACADEMIC STRUCTURE ============
+package "Academic Structure" {
+    class Course {
+        - courseId : Integer
+        - teacherId : Integer
+        - subjectId : Integer
+        - courseName : String
+        - grade : String
+        - monthlyFee : Decimal
+        - isProfessionalCourse : Boolean
+        + calculateFee()
+        + getEnrolledStudents()
+    }
+
+    class Subject {
+        - subjectId : Integer
+        - subjectName : String
+        + assignTeacher()
+    }
+
+    class Class_Schedules {
+        - scheduleId : Integer
+        - classId : Integer
+        - subjectId : Integer
+        - hallId : Integer
+        - scheduledDate : Date
+        - startTime : Time
+        - endTime : Time
+        - effectiveFrom : Date
+        + checkHallConflict()
+        + generateSchedule()
+    }
+
+    class Hall {
+        - hallId : Integer
+        - hallName : String
+        - capacity : Integer
+        - estimatedDimensions : JSON
+    }
+
+    class Course_Enrollments {
+        - enrollmentId : Integer
+        - studentId : Integer
+        - courseId : Integer
+        - enrolledAt : DateTime
+    }
+}
+
+' ============ SMART ATTENDANCE (NOVELTY MODULE) ============
+package "Smart Attendance" {
+    class AttendanceMaster {
+        - attendanceMasterId : Integer
+        - classId : Integer
+        - sessionDate : Date
+        - qrCount : Integer
+        - cctvEstimatedCount : Integer
+        - thresholdUsed : Integer
+        - matchStatus : AttendanceMatchStatus
+        - createdAt : DateTime
+        + startAttendanceSession()
+        + compareAttendanceCounts()
+        + generateAttendanceReport()
+    }
+
+    class StudentAttendanceLog {
+        - logId : Integer
+        - studentId : Integer
+        - attendanceMasterId : Integer
+        - qrScanTime : DateTime
+        - markedStatus : String
+        + recordQrScan()
+        + calculateAttendancePercentage()
+    }
+
+    class SuspiciousAttendanceLog {
+        - suspiciousLogId : Integer
+        - attendanceMasterId : Integer
+        - studentId : Integer
+        - detectionResult : String
+        - reviewedByCounterPersonId : Integer
+        - reviewedAt : DateTime
+        + triggerFaceVerification()
+        + resolveSuspiciousCase()
+    }
+
+    class Camera_Zones {
+        - zoneId : Integer
+        - hallId : Integer
+        - cameraIp : String
+        - zoneName : String
+        - isActive : Boolean
+    }
+}
+
+' ============ SAFETY & CONGESTION ============
+package "Safety & Congestion" {
+    class Hall_Congestion_Tracker {
+        - trackerId : Integer
+        - hallId : Integer
+        - currentHeadcount : Integer
+        - lastUpdated : DateTime
+    }
+
+    class Hall_Congestion_Logs {
+        - logId : Integer
+        - hallId : Integer
+        - recordedHeadcount : Integer
+        - isOvercrowded : Boolean
+        - recordedAt : DateTime
+    }
+}
+
+' ============ STUDY AREA ALLOCATION (NOVELTY MODULE) ============
+package "Smart Study Area Allocation" {
+    class StudyArea {
+        - studyAreaId : Integer
+        - areaName : String
+        - capacity : Integer
+    }
+
+    class StudyAreaBooking {
+        - bookingId : Integer
+        - studentId : Integer
+        - studyAreaId : Integer
+        - bookingStart : DateTime
+        - bookingEnd : DateTime
+        - arrivalConfirmedAt : DateTime
+        - status : BookingStatus
+        + createBooking()
+        + confirmArrival()
+        + autoReleaseSeat()
+    }
+}
+
+' ============ PAYMENT MANAGEMENT ============
+package "Payment Management" {
+    class Payments {
+        - paymentId : Integer
+        - studentId : Integer
+        - courseId : Integer
+        - amount : Decimal
+        - dueDate : Date
+        - status : PaymentStatus
+        - uploadedSlipUrl : String
+        - verifiedBy : Integer
+        - verifiedAt : DateTime
+        - receiptNumber : String
+        + recordPayment()
+        + checkOverdueStatus()
+        + verifyPayment()
+        + generateReceipt()
+    }
+}
+
+' ============ COMMUNICATION & CONTACT ============
+package "Communication" {
+    class SmsNotification {
+        - smsId : Integer
+        - recipientParentId : Integer
+        - messageType : String
+        - content : String
+        - sentAt : DateTime
+        - status : SmsStatus
+        + sendSms()
+        + retryFailedSms()
+    }
+
+    class Contact_Messages {
+        - messageId : Integer
+        - senderName : String
+        - senderPhone : String
+        - content : String
+        - isSpam : Boolean
+        - isRead : Boolean
+        - createdAt : DateTime
+    }
+}
+
+' ============ EXAMINATION & LEARNING MATERIALS ============
+package "Academic Records" {
+    class Exam {
+        - examId : Integer
+        - subjectId : Integer
+        - examDate : Date
+        - examType : String
+    }
+
+    class ExamMark {
+        - examMarkId : Integer
+        - examId : Integer
+        - studentId : Integer
+        - marks : Decimal
+        - uploadBatchId : Integer
+        - status : ExamMarkStatus
+        + uploadMarksFromExcel()
+        + publishResults()
+    }
+
+    class LearningMaterial {
+        - materialId : Integer
+        - teacherId : Integer
+        - subjectId : Integer
+        - fileUrl : String
+        - title : String
+        - uploadedAt : DateTime
+        + uploadMaterial()
+        + downloadMaterial()
+    }
+}
+
+' ============ SYSTEM & ADMIN DATA ============
+package "System Data" {
+    class SystemSettings {
+        - settingId : Integer
+        - settingKey : String
+        - settingValue : String
+        - lastUpdated : DateTime
+    }
+
+    class AuditLogs {
+        - logId : Integer
+        - userId : Integer
+        - actionPerformed : String
+        - entityType : String
+        - entityId : Integer
+        - timestamp : DateTime
+    }
+
+    class PendingRegistrations {
+        - pendingId : Integer
+        - studentName : String
+        - parentPhone : String
+        - courseId : Integer
+        - status : String
+        - submittedAt : DateTime
+    }
+}
+
+' ============ WEBSITE / PUBLIC CONTENT ============
+package "Public Website" {
+    class PromotionContent {
+        - contentId : Integer
+        - contentType : String
+        - title : String
+        - imageUrl : String
+        - displayOrder : Integer
+        - isActive : Boolean
+        + publishContent()
+        + scheduleContent()
+    }
+
+    class Announcement {
+        - announcementId : Integer
+        - title : String
+        - body : String
+        - postedAt : DateTime
+        - isActive : Boolean
+        + publishAnnouncement()
+    }
+
+    class StudentAchievement {
+        - achievementId : Integer
+        - studentId : Integer
+        - achievementTitle : String
+        - islandRank : Integer
+        - year : Integer
+        + displayAchievement()
+    }
+}
+
+' ============ RELATIONSHIPS ============
+User <|-- Admin
+User <|-- CounterPerson
+User <|-- Teacher
+User <|-- Student
+
+Parent "1" -- "0..*" Student : has children
+
+CounterPerson "1" --> "0..*" Student : registers
+Teacher "0..*" -- "0..*" Subject : teaches
+Subject "1" --> "0..*" Class_Schedules : scheduled as
+Class_Schedules "0..*" --> "1" Hall : held in
+Course "1" --> "0..*" Subject : contains
+Course "1" --> "1" Teacher : assigned to
+
+Student "1" --> "0..*" Course_Enrollments : has
+Course "1" --> "0..*" Course_Enrollments : contains
+
+Class_Schedules "1" --> "0..*" AttendanceMaster : generates
+AttendanceMaster "1" --> "0..*" StudentAttendanceLog : records
+AttendanceMaster "1" --> "0..*" SuspiciousAttendanceLog : flags
+StudentAttendanceLog "0..*" --> "1" Student : belongs to
+SuspiciousAttendanceLog "0..*" --> "1" Student : identifies
+SuspiciousAttendanceLog "0..*" --> "1" CounterPerson : reviewed by
+
+Hall "1" --> "0..*" Camera_Zones : monitored by
+Hall "1" --> "0..1" Hall_Congestion_Tracker : tracked by
+Hall "1" --> "0..*" Hall_Congestion_Logs : logged in
+
+Student "1" --> "0..*" StudyAreaBooking : makes
+StudyAreaBooking "0..*" --> "1" StudyArea : reserves
+
+Student "1" --> "0..*" Payments : owes
+Payments "0..*" --> "1" Course : for
+CounterPerson "1" --> "0..*" Payments : verifies
+
+Parent "1" --> "0..*" SmsNotification : receives
+CounterPerson "1" --> "0..*" SmsNotification : triggers
+
+Subject "1" --> "0..*" Exam : scheduled for
+Exam "1" --> "0..*" ExamMark : produces
+ExamMark "0..*" --> "1" Student : belongs to
+Teacher "1" --> "0..*" ExamMark : uploads
+Teacher "1" --> "0..*" LearningMaterial : uploads
+Student "0..*" --> "0..*" LearningMaterial : downloads
+
+Admin "1" --> "0..*" PromotionContent : manages
+Admin "1" --> "0..*" Announcement : manages
+Admin "1" --> "0..*" SystemSettings : configures
+Student "1" --> "0..*" StudentAchievement : has
+User "1" --> "0..*" AuditLogs : generates
+
+Course "1" --> "0..*" PendingRegistrations : requests
+@enduml
