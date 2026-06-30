@@ -15,7 +15,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const parentRoutes = require('./routes/parentRoutes');
 const studyAreaRoutes = require('./routes/studyAreaRoutes');
 const examRoutes = require('./routes/examRoutes');
-const smsRoutes = require('./routes/smsRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const hallRoutes = require('./routes/hallRoutes'); // New
 const classScheduleRoutes = require('./routes/classScheduleRoutes'); // New
 const cameraZoneRoutes = require('./routes/cameraZoneRoutes'); // New
@@ -23,7 +23,7 @@ const promoRoutes = require('./routes/promoRoutes'); // For Dynamic Flyers
 const contactRoutes = require('./routes/contactRoutes');
 const settingsRoutes = require('./routes/settingsRoutes'); // New
 const auditRoutes = require('./routes/auditRoutes');
-const smsService = require('./utils/smsService'); // Import smsService
+const whatsappService = require('./utils/whatsappService'); // Import whatsappService
 const { initCronJobs } = require('./utils/cronJobs');
 const materialRoutes = require('./routes/materialRoutes');
 const moodleSsoRoutes = require('./routes/moodleSsoRoutes');
@@ -64,7 +64,7 @@ app.use('/api/exams', examRoutes);
 app.use('/api/halls', hallRoutes); // New
 app.use('/api/classes', classScheduleRoutes); // New
 app.use('/api/camera-zones', cameraZoneRoutes); // New
-app.use('/api/sms', smsRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/promos', promoRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/settings', settingsRoutes); // New

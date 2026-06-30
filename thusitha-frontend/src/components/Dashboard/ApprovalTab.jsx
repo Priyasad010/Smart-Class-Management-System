@@ -26,7 +26,7 @@ const ApprovalTab = ({ pendingStudents, onApprove }) => {
         <tbody>
           {pendingStudents.map(s => (
             <tr key={s.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '12px' }}>{s.name}<br/><small>{s.phone}</small></td>
+              <td style={{ padding: '12px' }}>{s.name}<br/><small>{s.phone} {s.parent_name ? `(${s.parent_name})` : ''}</small></td>
               <td style={{ padding: '12px' }}>{s.grade}<br/><small>{s.school}</small></td>
               <td style={{ padding: '12px' }}><span style={{ padding: '4px 8px', backgroundColor: '#e8eaf6', borderRadius: '4px', fontSize: '12px' }}>{s.course_interest || 'General'}</span></td>
               <td style={{ padding: '12px' }}>

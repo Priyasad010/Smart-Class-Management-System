@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Doughnut } from 'react-chartjs-2';
 
-const SMSLogTab = ({ logs, onResend, onDelete, onBulkResend, onResendFilteredFailed }) => {
+const WhatsAppLogTab = ({ logs, onResend, onDelete, onBulkResend, onResendFilteredFailed }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [bulkDate, setBulkDate] = useState('');
@@ -243,7 +243,7 @@ const SMSLogTab = ({ logs, onResend, onDelete, onBulkResend, onResendFilteredFai
   );
 };
 
-SMSLogTab.propTypes = {
+WhatsAppLogTab.propTypes = {
   logs: PropTypes.array.isRequired,
   onResend: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
@@ -251,4 +251,4 @@ SMSLogTab.propTypes = {
   onResendFilteredFailed: PropTypes.func.isRequired
 };
 
-export default SMSLogTab;
+export default WhatsAppLogTab;

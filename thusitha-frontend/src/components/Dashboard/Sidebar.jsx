@@ -178,13 +178,13 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, role }) => {
           {!isTeacher && renderButton('study_area', <BookOpen size={20}/>, 'අධ්‍යයන අංශය')}
           {isTeacher && renderButton('teacher_classes', <Calendar size={20}/>, 'මගේ පන්ති')}
           
-          {(isAdmin || isCounterPerson) && renderButton('payments', <CreditCard size={20}/>, 'ගෙවීම්')}
+          {(isAdmin || isCounterPerson || isStudent) && renderButton('payments', <CreditCard size={20}/>, 'ගෙවීම්')}
           
           {(isAdmin || isTeacher || isStudent) && renderButton('exams', <FileText size={20}/>, 'විභාග සහ ලකුණු')}
           
 
 
-          {renderButton('materials', <FileText size={20}/>, 'ඉගෙනුම් ද්‍රව්‍ය')}
+          {!isCounterPerson && renderButton('materials', <FileText size={20}/>, 'ඉගෙනුම් ද්‍රව්‍ය')}
           
           {(isAdmin || isTeacher) && (
             <>

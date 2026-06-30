@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import ContactTab from './ContactTab';
-import SMSLogTab from './SMSLogTab';
+import WhatsAppLogTab from './WhatsAppLogTab';
 import SettingsTab from './SettingsTab';
 
 const AdminHubTab = ({
@@ -146,7 +146,7 @@ const AdminHubTab = ({
       )}
 
       {subTab === 'sms_logs' && (
-        <SMSLogTab
+        <WhatsAppLogTab
           logs={smsLogs}
           onResend={onResendSMS}
           onDelete={onDeleteSMSLog}

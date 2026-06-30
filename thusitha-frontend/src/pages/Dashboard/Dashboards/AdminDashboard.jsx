@@ -16,7 +16,7 @@ import StudyAreaTab from '../StudyAreaTab';
 import PaymentTab from '../PaymentTab';
 import ExamTab from '../ExamTab';
 import ContactTab from '../ContactTab';
-import SMSLogTab from '../SMSLogTab';
+import WhatsAppLogTab from '../WhatsAppLogTab';
 import MaterialTab from '../MaterialTab';
 import AttendanceTab from '../AttendanceTab';
 import SmartAttendanceLivePanel from '../SmartAttendanceLivePanel';

@@ -187,13 +187,13 @@ CREATE TABLE IF NOT EXISTS Exam_Results (
 );
 
 -- 8. Communication & Logs
-CREATE TABLE IF NOT EXISTS SMS_Logs (
+CREATE TABLE IF NOT EXISTS WhatsApp_Logs (
     log_id SERIAL PRIMARY KEY,
     parent_id INT REFERENCES Parents(parent_id) ON DELETE SET NULL,
     parent_phone VARCHAR(20) NOT NULL,
-    sms_type VARCHAR(50),
-    message_body TEXT,
-    status VARCHAR(50),
+    message_type VARCHAR(50),
+    message_body TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'Sent',
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

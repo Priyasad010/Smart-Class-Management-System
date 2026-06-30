@@ -1,6 +1,6 @@
 const db = require('../db');
 const path = require('node:path');
-const smsService = require('../utils/smsService');
+const whatsappService = require('../utils/whatsappService');
 const auditService = require('../utils/auditService');
 const axios = require('axios'); // Added axios for microservice calls
 
@@ -95,7 +95,7 @@ exports.markAttendanceByQR = async (req, res) => {
     const timeString = new Date(scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // 5. ස්වයංක්‍රීයව SMS යැවීම
-    await smsService.sendAttendanceSMS(student.student_id, courseName, timeString, attendanceStatus);
+    await whatsappService.sendAttendanceWhatsApp(student.student_id, courseName, timeString, attendanceStatus);
 
     res.status(201).json({ message: `පැමිණීම (${attendanceStatus === 'Late' ? 'ප්‍රමාද' : 'පැමිණි'}) ලෙස සටහන් වූ අතර මව්පියන්ට SMS පණිවිඩයක් යවන ලදී.`, student_name: student.student_name });
   } catch (error) {
@@ -345,8 +345,8 @@ exports.sendDiscrepancyAlert = async (req, res) => {
 
     const { student_name, parent_phone, course_name } = result.rows[0];
 
-    // We assume smsService.sendDiscrepancySMS is implemented in your smsService utility
-    await smsService.sendDiscrepancySMS(parent_phone, student_name, course_name);
+    // We assume whatsappService.sendDiscrepancyWhatsApp is implemented in your whatsappService utility
+    await whatsappService.sendDiscrepancyWhatsApp(parent_phone, student_name, course_name);
 
     res.status(200).json({ message: "මව්පියන්ට සාර්ථකව දැනුම් දෙන ලදී." });
   } catch (error) {
@@ -380,7 +380,7 @@ exports.bulkSendDiscrepancyAlerts = async (req, res) => {
     let sentCount = 0;
     for (const row of result.rows) {
       // Note: In production, consider using a queue for massive numbers of SMS
-      await smsService.sendDiscrepancySMS(row.parent_phone, row.student_name, row.course_name);
+      await whatsappService.sendDiscrepancyWhatsApp(row.parent_phone, row.student_name, row.course_name);
       sentCount++;
     }
 
@@ -461,7 +461,7 @@ exports.triggerSafetyDrill = async (req, res) => {
     const message = "🧪 [SAFETY DRILL] This is a test alert from the Thusitha Smart Class Congestion Monitoring System. Please acknowledge receipt.";
     
     for (const phone of staffPhones) {
-      if (phone.trim()) await smsService.sendCustomSMS(phone.trim(), message);
+      if (phone.trim()) await whatsappService.sendCustomWhatsApp(phone.trim(), message);
     }
 
     res.json({ message: "Safety Drill සාර්ථකව ආරම්භ කළා! සියලුම කාර්ය මණ්ඩලයට WhatsApp පණිවිඩ යවන ලදී." });
@@ -494,7 +494,7 @@ const notifyStaffOfCongestion = async (hall, thresholdMinutes, staffPhones, firs
   const message = `🚨 CONGESTION ALERT: Hall ${hall.hall_name} has ${hall.current_count} students (Capacity: ${hall.capacity}). Over-capacity for ${thresholdMinutes}+ minutes.`;
   
   for (const phone of staffPhones) {
-    await smsService.sendCustomSMS(phone.trim(), message); 
+    await whatsappService.sendCustomWhatsApp(phone.trim(), message); 
   }
 
   const logRes = await db.pool.query(

@@ -17,5 +17,12 @@ export const authService = {
     }
 
     return data;
+  },
+
+  forgotPassword: async (username) => {
+    return await request('/auth/forgot-password', {
+      method: 'POST',
+      body: { username }
+    });
   }
 };

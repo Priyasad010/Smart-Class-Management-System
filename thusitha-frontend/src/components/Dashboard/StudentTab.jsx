@@ -111,7 +111,14 @@ const StudentTab = ({ students, onAddClick, onEditClick, onDeleteClick, onEncode
                   {student.hasEncoding ? '🛡️' : '🔘'}
                 </span>
               </td>
-              <td style={{ padding: '12px' }}>{student.parentName}</td>
+              <td style={{ padding: '12px' }}>
+                <div>{student.parentName}</div>
+                {student.parentPhone && (
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                    📱 {student.parentPhone}
+                  </div>
+                )}
+              </td>
               {(canEdit || canDelete) && (
                 <td style={{ padding: '12px', display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   {canEdit && (

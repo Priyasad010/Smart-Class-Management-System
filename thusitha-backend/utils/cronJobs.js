@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const db = require('../db');
-const smsService = require('./smsService');
+const whatsappService = require('./whatsappService');
 const attendanceController = require('../controllers/attendanceController');
 
 /**
@@ -32,7 +32,7 @@ const initCronJobs = () => {
       const result = await db.pool.query(query, [currentMonth]);
 
       for (const student of result.rows) {
-        await smsService.sendLatePaymentSMS(student.student_id, student.student_name, student.parent_phone, student.course_name, currentMonth);
+        await whatsappService.sendLatePaymentWhatsApp(student.student_id, student.student_name, student.parent_phone, student.course_name, currentMonth);
       }
       console.log(`✅ [Cron] Automated reminders sent to ${result.rows.length} students.`);
     } catch (error) {

@@ -2,6 +2,7 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const auditService = require('../utils/auditService');
+const whatsappService = require('../utils/whatsappService');
 
 // පරිශීලක ඇතුළත් වීම (Login)
 exports.login = async (req, res) => {
@@ -85,9 +86,56 @@ exports.forgotPassword = async (req, res) => {
     const result = await db.pool.query('SELECT * FROM Users WHERE username = $1', [username]);
     if (result.rows.length === 0) return res.status(404).json({ message: 'පරිශීලකයා හමුවුනේ නැත.' });
     
-    // In a real app, generate a token, save to DB, and send an email/SMS.
-    res.json({ message: 'මුරපදය යළි සැකසීමේ සබැඳිය (Reset Link) ඔබගේ දුරකථනයට හෝ ඊමේල් ලිපිනයට යවන ලදී.' });
+    const user = result.rows[0];
+    let phone = null;
+    let name = null;
+
+    if (user.role === 'Student') {
+      const parentRes = await db.pool.query(
+        'SELECT p.parent_phone, s.student_name FROM Students s JOIN Parents p ON s.parent_id = p.parent_id WHERE s.user_id = $1', 
+        [user.user_id]
+      );
+      if (parentRes.rows.length > 0) {
+        phone = parentRes.rows[0].parent_phone;
+        name = parentRes.rows[0].student_name;
+      }
+    } else if (user.role === 'Teacher') {
+      const teacherRes = await db.pool.query('SELECT phone, teacher_name FROM Teachers WHERE user_id = $1', [user.user_id]);
+      if (teacherRes.rows.length > 0) {
+        phone = teacherRes.rows[0].phone;
+        name = teacherRes.rows[0].teacher_name;
+      }
+    } else if (user.role === 'Admin') {
+      // Allow admin via specific contact if needed, for now block.
+      return res.status(400).json({ message: 'පරිපාලක ගිණුම් සඳහා දුරකථන අංකයක් සොයාගත නොහැක.' });
+    } else {
+      return res.status(400).json({ message: 'මෙම පරිශීලකයා සඳහා මුරපදය යළි සැකසිය නොහැක.' });
+    }
+
+    if (!phone) {
+      return res.status(400).json({ message: 'ලියාපදිංචි දුරකථන අංකයක් නොමැත.' });
+    }
+
+    // Reset password to default 'Thusitha@123'
+    const defaultPassword = 'Thusitha@123';
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(defaultPassword, salt);
+    await db.pool.query('UPDATE Users SET password_hash = $1 WHERE user_id = $2', [passwordHash, user.user_id]);
+
+    const messageBody = `*Thusitha Institute*\n\nඔබගේ ගිණුමේ මුරපදය අලුත් කරන ලදී.\nපරිශීලක නාමය: ${user.username}\nතාවකාලික මුරපදය: ${defaultPassword}\n\nකරුණාකර ලොග් වූ වහාම මුරපදය වෙනස් කරන්න.`;
+    
+    const sendResult = await whatsappService.sendCustomWhatsApp(phone, messageBody);
+
+    if (!sendResult.success) {
+      return res.status(500).json({ 
+        message: 'WhatsApp පණිවිඩය යැවීමට නොහැකි විය. කරුණාකර WhatsApp සේවාව සක්‍රීය දැයි පරීක්ෂා කරන්න.',
+        error: sendResult.error 
+      });
+    }
+
+    res.json({ message: 'ඔබගේ ලියාපදිංචි දුරකථන අංකයට අලුත් තාවකාලික මුරපදය WhatsApp ඔස්සේ යවන ලදී.' });
   } catch (err) {
+    console.error('Forgot Password Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 };

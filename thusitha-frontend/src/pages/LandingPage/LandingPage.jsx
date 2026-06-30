@@ -11,6 +11,7 @@ const LandingPage = () => {
     school: '',
     grade: '',
     parent_phone: '',
+    parent_name: '',
     email: '',
     course_id: ''
   });
@@ -46,7 +47,7 @@ const LandingPage = () => {
       if (response) { // Check if response is not null/undefined
         alert('ලියාපදිංචිය සාර්ථකයි! කරුණාකර අනුමැතිය සඳහා කාර්යාලයට පැමිණෙන්න.');
         setIsModalOpen(false);
-        setFormData({ student_name: '', school: '', grade: '', parent_phone: '', email: '', course_id: '' });
+        setFormData({ student_name: '', school: '', grade: '', parent_phone: '', parent_name: '', email: '', course_id: '' });
       } else {
         const data = await response.json();
         alert(data.error || 'ලියාපදිංචිය අසාර්ථකයි.');
@@ -824,6 +825,10 @@ const LandingPage = () => {
                   <label htmlFor="grade" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>ශ්‍රේණිය</label>
                   <input id="grade" type="text" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})} />
                 </div>
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label htmlFor="parent_name" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>මව්පියන්ගේ නම</label>
+                <input id="parent_name" type="text" placeholder="මව්පියන්ගේ නම" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} value={formData.parent_name} onChange={e => setFormData({...formData, parent_name: e.target.value})} required />
               </div>
               <div style={{ marginBottom: '15px' }}>
                 <label htmlFor="parent_phone" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>මව්පිය දුරකථන අංකය</label>

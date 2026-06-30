@@ -94,13 +94,13 @@ exports.bulkGenerateEncodings = async (req, res) => {
 
 // Public Registration (Adds to a pending queue)
 exports.publicRegistration = async (req, res) => {
-  const { student_name, school, grade, parent_phone, email, course_id } = req.body;
+  const { student_name, school, grade, parent_phone, parent_name, email, course_id } = req.body;
   try {
     const query = `
-      INSERT INTO PendingRegistrations (name, school, grade, phone, email, course_interest, status)
-      VALUES ($1, $2, $3, $4, $5, $6, 'Pending') RETURNING id
+      INSERT INTO PendingRegistrations (name, school, grade, phone, parent_name, email, course_interest, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending') RETURNING id
     `;
-    const result = await db.pool.query(query, [student_name, school, grade, parent_phone, email, course_id || null]);
+    const result = await db.pool.query(query, [student_name, school, grade, parent_phone, parent_name || null, email, course_id || null]);
     res.status(201).json({ message: 'ලියාපදිංචිය සාර්ථකයි! කරුණාකර අනුමැතිය සඳහා කාර්යාලයට පැමිණෙන්න.', id: result.rows[0].id });
   } catch (err) {
     res.status(500).json({ error: 'දත්ත ඇතුළත් කිරීමේ දෝෂයකි.', details: err.message });
@@ -140,10 +140,33 @@ exports.approveStudent = async (req, res) => {
     );
     const userId = userRes.rows[0].user_id;
 
-    // 3. Create Real Student Profile
+    // 3. Resolve parent_id
+    let finalParentId = parent_id || null;
+    if (!finalParentId && s.phone) {
+      const parent_phone = s.phone;
+      const parent_name = s.parent_name || 'Parent';
+      const existingParent = await client.query('SELECT parent_id FROM Parents WHERE parent_phone = $1', [parent_phone]);
+      if (existingParent.rows.length > 0) {
+        finalParentId = existingParent.rows[0].parent_id;
+      } else {
+        const parentPasswordHash = await bcrypt.hash('Thusitha@123', 10);
+        const parentUserResult = await client.query(
+          'INSERT INTO Users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING user_id',
+          [`P-${parent_phone}`, parentPasswordHash, 'Parent']
+        );
+        const parentUserId = parentUserResult.rows[0].user_id;
+        const parentResult = await client.query(
+          'INSERT INTO Parents (user_id, parent_name, parent_phone) VALUES ($1, $2, $3) RETURNING parent_id',
+          [parentUserId, parent_name, parent_phone]
+        );
+        finalParentId = parentResult.rows[0].parent_id;
+      }
+    }
+
+    // 4. Create Real Student Profile
     const studentRes = await client.query(
       'INSERT INTO Students (user_id, parent_id, student_name, school, grade, qr_code_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING student_id',
-      [userId, parent_id || null, s.name, s.school, s.grade, qr_code_key]
+      [userId, finalParentId, s.name, s.school, s.grade, qr_code_key]
     );
 
     // 4. Clean up pending table
@@ -251,7 +274,7 @@ exports.registerStudent = async (req, res) => {
 // ශිෂ්‍ය දත්ත යාවත්කාලීන කිරීම (Update)
 exports.updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { student_name, school, grade, parent_name } = req.body;
+  const { student_name, school, grade, parent_name, parent_phone } = req.body;
 
   const client = await db.pool.connect();
   try {
@@ -268,8 +291,40 @@ exports.updateStudent = async (req, res) => {
       return res.status(404).json({ message: 'ශිෂ්‍යයා සොයාගත නොහැකි විය.' });
     }
 
-    if (parent_name && result.rows[0].parent_id) {
-       await client.query('UPDATE Parents SET parent_name = $1 WHERE parent_id = $2', [parent_name, result.rows[0].parent_id]);
+    if (result.rows[0].parent_id) {
+      const currentParentId = result.rows[0].parent_id;
+      let finalParentId = currentParentId;
+      
+      if (parent_phone) {
+        // Check if phone already exists
+        const existRes = await client.query('SELECT parent_id FROM Parents WHERE parent_phone = $1', [parent_phone]);
+        if (existRes.rows.length > 0) {
+          const existId = existRes.rows[0].parent_id;
+          if (existId !== currentParentId) {
+            // It's a different parent! Re-link student to this parent (sibling logic)
+            finalParentId = existId;
+            await client.query('UPDATE Students SET parent_id = $1 WHERE student_id = $2', [finalParentId, id]);
+            // If parent_name was also provided, update the existing parent's name
+            if (parent_name) {
+              await client.query('UPDATE Parents SET parent_name = $1 WHERE parent_id = $2', [parent_name, finalParentId]);
+            }
+          } else {
+            // Same parent, just update name
+            if (parent_name) {
+              await client.query('UPDATE Parents SET parent_name = $1 WHERE parent_id = $2', [parent_name, finalParentId]);
+            }
+          }
+        } else {
+          // Phone does not exist, safe to update current parent
+          if (parent_name) {
+            await client.query('UPDATE Parents SET parent_name = $1, parent_phone = $2 WHERE parent_id = $3', [parent_name, parent_phone, currentParentId]);
+          } else {
+            await client.query('UPDATE Parents SET parent_phone = $1 WHERE parent_id = $2', [parent_phone, currentParentId]);
+          }
+        }
+      } else if (parent_name) {
+        await client.query('UPDATE Parents SET parent_name = $1 WHERE parent_id = $2', [parent_name, currentParentId]);
+      }
     }
     
     await client.query('COMMIT');
@@ -278,6 +333,9 @@ exports.updateStudent = async (req, res) => {
     res.json({ message: 'දත්ත සාර්ථකව යාවත්කාලීන කරන ලදී!', student: result.rows[0] });
   } catch (err) {
     await client.query('ROLLBACK');
+    if (err.code === '23505' && err.constraint === 'parents_parent_phone_key') {
+      return res.status(400).json({ error: 'මෙම දුරකථන අංකය දැනටමත් වෙනත් මව්පියෙකු සඳහා භාවිතා කර ඇත.' });
+    }
     res.status(500).json({ error: err.message });
   } finally {
     client.release();
@@ -314,7 +372,7 @@ exports.getAllStudents = async (req, res) => {
     if (req.user && req.user.role === 'Teacher') {
       // Teacher: Only see students enrolled in their courses
       query = `
-        SELECT DISTINCT s.*, p.parent_name 
+        SELECT DISTINCT s.*, p.parent_name, p.parent_phone 
         FROM Students s 
         LEFT JOIN Parents p ON s.parent_id = p.parent_id 
         JOIN Course_Enrollments ce ON s.student_id = ce.student_id
@@ -327,7 +385,7 @@ exports.getAllStudents = async (req, res) => {
     } else {
       // Admin/Counter Person: See all students
       query = `
-        SELECT s.*, p.parent_name 
+        SELECT s.*, p.parent_name, p.parent_phone 
         FROM Students s 
         LEFT JOIN Parents p ON s.parent_id = p.parent_id 
         ORDER BY s.student_id DESC
@@ -340,6 +398,7 @@ exports.getAllStudents = async (req, res) => {
       name: student.student_name || 'Unknown',
       email: student.school || 'N/A',
       parentName: student.parent_name || 'N/A',
+      parentPhone: student.parent_phone || 'N/A',
       hasEncoding: !!student.face_encoding,
       hasPhoto: !!student.profile_photo_path,
       photoPath: student.profile_photo_path

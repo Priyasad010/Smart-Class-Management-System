@@ -37,17 +37,17 @@ whatsappClient.on('disconnected', (reason) => {
 whatsappClient.initialize();
 
 /**
- * 📝 Helper: Log SMS to the database for history and retry tracking.
+ * 📝 Helper: Log WhatsApp message to the database for history and retry tracking.
  */
-const logSMS = async (parentId, phone, type, body, status) => {
+const logWhatsAppMessage = async (parentId, phone, type, body, status) => {
   try {
     await db.pool.query(
-      `INSERT INTO SMS_Logs (parent_id, parent_phone, sms_type, message_body, status, sent_at)
+      `INSERT INTO WhatsApp_Logs (parent_id, parent_phone, message_type, message_body, status, sent_at)
        VALUES ($1, $2, $3, $4, $5, NOW())`,
       [parentId, phone, type, body, status]
     );
   } catch (err) {
-    console.error('❌ SMS Logging Error:', err.message);
+    console.error('❌ WhatsApp Logging Error:', err.message);
   }
 };
 
@@ -57,8 +57,10 @@ const sendWhatsAppMessage = async (phone, messageBody, parentId, type) => {
     if (isWhatsAppReady) {
       // WhatsApp requires format: 9477xxxxxxx@c.us
       let formattedPhone = phone.replace('+', '').replace(/\s/g, '');
-      if (formattedPhone.startsWith('0')) {
+      if (formattedPhone.length === 10 && formattedPhone.startsWith('0')) {
         formattedPhone = '94' + formattedPhone.substring(1);
+      } else if (formattedPhone.length === 9) {
+        formattedPhone = '94' + formattedPhone;
       }
       const chatId = `${formattedPhone}@c.us`;
       await whatsappClient.sendMessage(chatId, messageBody);
@@ -71,11 +73,11 @@ const sendWhatsAppMessage = async (phone, messageBody, parentId, type) => {
      statusResult = 'Failed';
   }
   
-  await logSMS(parentId, phone, type, messageBody, statusResult);
+  await logWhatsAppMessage(parentId, phone, type, messageBody, statusResult);
   return { success: statusResult === 'Sent' };
 };
 
-exports.sendAttendanceSMS = async (studentId, courseName, timeString, status) => {
+exports.sendAttendanceWhatsApp = async (studentId, courseName, timeString, status) => {
   try {
     const parentRes = await db.pool.query(
       `SELECT p.parent_id, p.parent_phone, s.student_name 
@@ -91,11 +93,11 @@ exports.sendAttendanceSMS = async (studentId, courseName, timeString, status) =>
 
     await sendWhatsAppMessage(parent_phone, messageBody, parent_id, 'Attendance');
   } catch (error) {
-    console.error('❌ sendAttendanceSMS Error:', error.message);
+    console.error('❌ sendAttendanceWhatsApp Error:', error.message);
   }
 };
 
-exports.sendLatePaymentSMS = async (studentId, studentName, parentPhone, courseName, month) => {
+exports.sendLatePaymentWhatsApp = async (studentId, studentName, parentPhone, courseName, month) => {
   try {
     const messageBody = `*Payment Reminder*\n\n${studentName}'s fee for ${courseName} (${month}) is pending at Thusitha Institute.`;
     const parentRes = await db.pool.query('SELECT parent_id FROM Students WHERE student_id = $1', [studentId]);
@@ -103,11 +105,11 @@ exports.sendLatePaymentSMS = async (studentId, studentName, parentPhone, courseN
 
     await sendWhatsAppMessage(parentPhone, messageBody, parentId, 'Payment');
   } catch (error) {
-    console.error('❌ sendLatePaymentSMS Error:', error.message);
+    console.error('❌ sendLatePaymentWhatsApp Error:', error.message);
   }
 };
 
-exports.sendDiscrepancySMS = async (parentPhone, studentName, courseName) => {
+exports.sendDiscrepancyWhatsApp = async (parentPhone, studentName, courseName) => {
   try {
     const messageBody = `*Security Alert*\n\nAttendance discrepancy detected for ${studentName} in ${courseName}. Please contact Thusitha Institute.`;
     const parentRes = await db.pool.query('SELECT parent_id FROM Parents WHERE parent_phone = $1', [parentPhone]);
@@ -115,23 +117,23 @@ exports.sendDiscrepancySMS = async (parentPhone, studentName, courseName) => {
 
     await sendWhatsAppMessage(parentPhone, messageBody, parentId, 'Security');
   } catch (error) {
-    console.error('❌ sendDiscrepancySMS Error:', error.message);
+    console.error('❌ sendDiscrepancyWhatsApp Error:', error.message);
   }
 };
 
-exports.sendCustomSMS = async (phone, body) => {
+exports.sendCustomWhatsApp = async (phone, body) => {
   try {
     const parentRes = await db.pool.query('SELECT parent_id FROM Parents WHERE parent_phone = $1', [phone]);
     const parentId = parentRes.rows[0]?.parent_id;
 
     return await sendWhatsAppMessage(phone, body, parentId, 'Custom');
   } catch (error) {
-    console.error('❌ sendCustomSMS Error:', error.message);
+    console.error('❌ sendCustomWhatsApp Error:', error.message);
     return { success: false, error: error.message };
   }
 };
 
-exports.sendExamResultSMS = async (studentId, examName, marks, totalMarks) => {
+exports.sendExamResultWhatsApp = async (studentId, examName, marks, totalMarks) => {
   try {
     const parentRes = await db.pool.query(
       `SELECT p.parent_id, p.parent_phone, s.student_name 
@@ -147,6 +149,6 @@ exports.sendExamResultSMS = async (studentId, examName, marks, totalMarks) => {
 
     await sendWhatsAppMessage(parent_phone, messageBody, parent_id, 'Exam');
   } catch (error) {
-    console.error('❌ sendExamResultSMS Error:', error.message);
+    console.error('❌ sendExamResultWhatsApp Error:', error.message);
   }
 };

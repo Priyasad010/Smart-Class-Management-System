@@ -15,6 +15,7 @@ import StudentTab from '../../components/Dashboard/StudentTab';
 import TeacherTab from '../../components/Dashboard/TeacherTab';
 import AttendanceTab from '../../components/Dashboard/AttendanceTab';
 import PaymentTab from '../../components/Dashboard/PaymentTab';
+import StudentPaymentTab from '../../components/Dashboard/StudentPaymentTab';
 import EnrollmentTab from '../../components/Dashboard/EnrollmentTab';
 import UserTab from '../../components/Dashboard/UserTab';
 import ApprovalTab from '../../components/Dashboard/ApprovalTab';
@@ -22,7 +23,7 @@ import HomeTab from '../../components/Dashboard/HomeTab';
 import StudyAreaTab from '../../components/Dashboard/StudyAreaTab';
 import ExamTab from '../../components/Dashboard/ExamTab';
 import ContactTab from '../../components/Dashboard/ContactTab';
-import SMSLogTab from '../../components/Dashboard/SMSLogTab';
+import WhatsAppLogTab from '../../components/Dashboard/WhatsAppLogTab';
 import MaterialTab from '../../components/Dashboard/MaterialTab';
 import ClassTab from '../../components/Dashboard/ClassTab';
 import TimetableTab from '../../components/Dashboard/TimetableTab';
@@ -264,9 +265,9 @@ const Dashboard = () => {
           : Promise.resolve([]),
         // Study area seats: All staff
         request('/study-area/seats').catch(e => { console.error('Seats error:', e); return []; }),
-        // SMS logs: Admin only
+        // WhatsApp logs: Admin only
         isAdmin
-          ? request('/sms/logs').catch(e => { console.error('SMS error:', e); return []; })
+          ? request('/whatsapp/logs').catch(e => { console.error('WhatsApp error:', e); return []; })
           : Promise.resolve([]),
         // Class schedules: Admin, Teacher, Counter Person
         isAdminOrTeacherOrCounterPerson
@@ -706,11 +707,11 @@ const Dashboard = () => {
     }
   };
 
-  // Quick Reply SMS Handler
+  // Quick Reply WhatsApp Handler
   const handleQuickReply = async (message, text) => {
     if (!message.sender_phone) return showNotification('මෙම විමසීමේ දුරකථන අංකයක් නොමැත.', 'error');
     try {
-      await request('/sms/send-custom', {
+      await request('/whatsapp/send-custom', {
         method: 'POST',
         body: { phone: message.sender_phone, message: text }
       });
@@ -831,7 +832,7 @@ const Dashboard = () => {
   };
 
   // පැමිණීමේ විසංවාදයක් පිළිබඳ මව්පියන්ට දැනුම් දීමේ Handler එක
-  const handleSendDiscrepancySMS = async (studentId, sessionId) => {
+  const handleSendDiscrepancyWhatsApp = async (studentId, sessionId) => {
     try {
       await request('/attendance/discrepancy-alert', {
         method: 'POST',
@@ -1071,10 +1072,10 @@ const Dashboard = () => {
     }
   };
 
-  // SMS පණිවිඩයක් නැවත යැවීමේ Handler එක
-  const handleResendSMS = async (logId) => {
+  // WhatsApp පණිවිඩයක් නැවත යැවීමේ Handler එක
+  const handleResendWhatsApp = async (logId) => {
     try {
-      await request(`/sms/resend/${logId}`, { method: 'POST' });
+      await request(`/whatsapp/resend/${logId}`, { method: 'POST' });
       showNotification('WhatsApp පණිවිඩය සාර්ථකව නැවත යවන ලදී!');
       fetchDatabaseData(); // වාර්තා නැවත පූරණය කිරීම
     } catch (err) {
@@ -1082,16 +1083,16 @@ const Dashboard = () => {
     }
   };
 
-  // SMS වාර්තාව UI එකෙන් පමණක් ඉවත් කිරීම (UI Only Delete)
-  const handleDeleteSMSLog = (id) => {
+  // WhatsApp වාර්තාව UI එකෙන් පමණක් ඉවත් කිරීම (UI Only Delete)
+  const handleDeleteWhatsAppLog = (id) => {
     setSmsLogs(prev => prev.filter(log => log.log_id !== id));
   };
 
   // පණිවිඩ තොග වශයෙන් නැවත යැවීම (Bulk Resend)
-  const handleBulkResendSMS = async (date) => {
+  const handleBulkResendWhatsApp = async (date) => {
     if (!date) return showNotification('කරුණාකර දිනයක් තෝරන්න.', 'error');
     try {
-      await request('/sms/bulk-resend', {
+      await request('/whatsapp/bulk-resend', {
         method: 'POST',
         body: { date }
       });
@@ -1105,7 +1106,7 @@ const Dashboard = () => {
   // පෙරාගත් අසාර්ථක පණිවිඩ සියල්ල නැවත යැවීම
   const handleResendFilteredFailed = async (ids) => {
     try {
-      await request('/sms/bulk-resend-ids', {
+      await request('/whatsapp/bulk-resend-ids', {
         method: 'POST',
         body: { ids }
       });
@@ -1365,7 +1366,7 @@ const Dashboard = () => {
                 />
               )}
 
-              {/* ADMIN HUB TAB (Inquiries + SMS + Settings) */}
+              {/* ADMIN HUB TAB (Inquiries + WhatsApp + Settings) */}
               {!loading && activeTab === 'admin_hub' && (
                 <AdminHubTab
                   inquiries={inquiries}
@@ -1377,9 +1378,9 @@ const Dashboard = () => {
                   onQuickReply={handleQuickReply}
                   onBulkDeleteSpam={handleBulkDeleteSpam}
                   smsLogs={smsLogs}
-                  onResendSMS={handleResendSMS}
-                  onDeleteSMSLog={handleDeleteSMSLog}
-                  onBulkResendSMS={handleBulkResendSMS}
+                  onResendWhatsApp={handleResendWhatsApp}
+                  onDeleteWhatsAppLog={handleDeleteWhatsAppLog}
+                  onBulkResendWhatsApp={handleBulkResendWhatsApp}
                   onResendFilteredFailed={handleResendFilteredFailed}
                   systemSettings={systemSettings}
                   onUpdateSetting={handleUpdateSetting}
@@ -1390,18 +1391,22 @@ const Dashboard = () => {
               )}
 
               {/* MATERIALS TAB */}
-              {!loading && activeTab === 'materials' && (
+              {!loading && activeTab === 'materials' && !isCounterPerson && (
                 <MaterialTab courses={user.role === 'Student' ? enrolledCourses : realCourses} />
               )}
 
               {/* PAYMENTS TAB */}
               {!loading && activeTab === 'payments' && (
-                <PaymentTab
-                  students={students}
-                  courses={realCourses}
-                  onRecordPayment={handleRecordPayment}
-                  onSendReminders={handleSendReminders}
-                />
+                user.role === 'Student' ? (
+                  <StudentPaymentTab enrolledCourses={enrolledCourses} />
+                ) : (
+                  <PaymentTab
+                    students={students}
+                    courses={realCourses}
+                    onRecordPayment={handleRecordPayment}
+                    onSendReminders={handleSendReminders}
+                  />
+                )
               )}
 
               {/* AI PANEL (MERGED LIVE PANEL & VALIDATION) */}
@@ -1414,7 +1419,7 @@ const Dashboard = () => {
                   <AttendanceValidationTab
                     halls={halls}
                     activeSessions={classSchedules}
-                    onSendAlert={handleSendDiscrepancySMS}
+                    onSendAlert={handleSendDiscrepancyWhatsApp}
                     onBulkNotify={handleBulkDiscrepancyAlert}
                   />
                 </div>

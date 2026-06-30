@@ -20,6 +20,13 @@ const LoginPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
 
+  // Forgot Password state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [isSubmittingForgot, setIsSubmittingForgot] = useState(false);
+
   const PRIMARY_NAVY = '#070D59';
   const SECONDARY_BLUE = '#1F3C88';
 
@@ -73,6 +80,22 @@ const LoginPage = () => {
       showNotification(err.message || 'මුරපදය වෙනස් කිරීමේ දෝෂයකි.', 'error');
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotMessage('');
+    setIsSubmittingForgot(true);
+    
+    try {
+      const res = await authService.forgotPassword(forgotUsername);
+      setForgotMessage(res.message || 'තාවකාලික මුරපදය WhatsApp ඔස්සේ යවන ලදී.');
+    } catch (err) {
+      setForgotError(err.message || 'පරිශීලකයා හමුවුනේ නැත.');
+    } finally {
+      setIsSubmittingForgot(false);
     }
   };
 
@@ -185,8 +208,18 @@ const LoginPage = () => {
                 </button>
               </div>
             </div>
+
+            <div style={{ textAlign: 'right', marginBottom: '15px' }}>
+              <span 
+                onClick={() => setShowForgotModal(true)}
+                style={{ color: SECONDARY_BLUE, cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+              >
+                මුරපදය අමතකද? (Forgot Password?)
+              </span>
+            </div>
+
             <button 
-              type="submit" 
+              type="submit"  
               disabled={loading}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
@@ -256,6 +289,67 @@ const LoginPage = () => {
           </form>
         )}
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 1000,
+          fontFamily: 'Segoe UI'
+        }}>
+          <div style={{
+            backgroundColor: '#white',
+            background: 'white',
+            padding: '30px 40px',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            animation: 'fadeIn 0.3s ease-in-out'
+          }}>
+            <h2 style={{ margin: '0 0 15px 0', color: PRIMARY_NAVY }}>මුරපදය අමතකද?</h2>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+              ඔබගේ පරිශීලක නාමය (Username) ඇතුලත් කරන්න. ලියාපදිංචි WhatsApp අංකයට තාවකාලික මුරපදයක් යවනු ලැබේ.
+            </p>
+
+            {forgotError && <div style={{ color: 'red', fontSize: '14px', marginBottom: '10px' }}>{forgotError}</div>}
+            {forgotMessage && <div style={{ color: 'green', fontSize: '14px', marginBottom: '10px' }}>{forgotMessage}</div>}
+
+            <form onSubmit={handleForgotPassword}>
+              <div style={{ marginBottom: '15px' }}>
+                <input 
+                  type="text" 
+                  placeholder="Username ඇතුලත් කරන්න" 
+                  value={forgotUsername}
+                  onChange={(e) => setForgotUsername(e.target.value)}
+                  required 
+                  style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '8px', boxSizing: 'border-box' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setShowForgotModal(false); setForgotMessage(''); setForgotError(''); setForgotUsername(''); }}
+                  style={{ padding: '8px 16px', border: 'none', background: '#ccc', borderRadius: '8px', cursor: 'pointer', fontWeight: '500' }}
+                >
+                  අවලංගු කරන්න
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmittingForgot}
+                  style={{ padding: '8px 16px', border: 'none', background: PRIMARY_NAVY, color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {isSubmittingForgot ? 'යවමින්...' : 'යවන්න'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
