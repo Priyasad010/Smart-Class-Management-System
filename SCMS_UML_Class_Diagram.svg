@@ -1,0 +1,537 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="2000" viewBox="0 0 2400 2000" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#2E5C8A" stroke-width="1.4"/>
+    </marker>
+    <marker id="diamond" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="14" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 4L6 1L11 4L6 7Z" fill="white" stroke="#2E5C8A" stroke-width="1"/>
+    </marker>
+    <marker id="triangle" viewBox="0 0 12 10" refX="11" refY="5" markerWidth="14" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1L11 5L1 9Z" fill="white" stroke="#2E5C8A" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2400" height="2000" fill="#FFFFFF"/>
+
+  <text x="1200" y="36" text-anchor="middle" font-size="26" font-weight="bold" fill="#1A3A5C">Smart Class Management System — UML Class Diagram</text>
+  <text x="1200" y="58" text-anchor="middle" font-size="14" fill="#5A5A5A">Thusitha Institute · Group IIT 03 · Reconciled against backend codebase</text>
+
+  <!-- ============ PACKAGE: USER MANAGEMENT ============ -->
+  <rect x="40" y="90" width="780" height="520" rx="10" fill="#F5F8FB" stroke="#9DB8D4" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="60" y="114" font-size="15" font-weight="bold" fill="#2E5C8A">User Management</text>
+
+  <!-- User -->
+  <g>
+    <rect x="280" y="130" width="280" height="166" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="280" y="130" width="280" height="26" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="420" y="148" text-anchor="middle" font-size="14" font-weight="bold" fill="#1A3A5C">User</text>
+    <line x1="280" y1="156" x2="560" y2="156" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="290" y="173" font-size="11.5" fill="#222">- userId : UUID</text>
+    <text x="290" y="190" font-size="11.5" fill="#222">- email : String</text>
+    <text x="290" y="207" font-size="11.5" fill="#222">- passwordHash : String</text>
+    <text x="290" y="224" font-size="11.5" fill="#222">- role : UserRole</text>
+    <text x="290" y="241" font-size="11.5" fill="#222">- status : AccountStatus</text>
+    <line x1="280" y1="249" x2="560" y2="249" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="290" y="266" font-size="11.5" fill="#222">+ login()</text>
+    <text x="290" y="283" font-size="11.5" fill="#222">+ logout() / resetPassword()</text>
+  </g>
+
+  <!-- Admin -->
+  <g>
+    <rect x="60" y="350" width="200" height="120" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="60" y="350" width="200" height="24" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="160" y="367" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3A5C">Admin</text>
+    <line x1="60" y1="374" x2="260" y2="374" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="68" y="389" font-size="10.5" fill="#222">- adminId : UUID</text>
+    <line x1="60" y1="396" x2="260" y2="396" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="68" y="411" font-size="10.5" fill="#222">+ manageUsers()</text>
+    <text x="68" y="426" font-size="10.5" fill="#222">+ manageWebsiteContent()</text>
+    <text x="68" y="441" font-size="10.5" fill="#222">+ viewSystemReports()</text>
+  </g>
+
+  <!-- CounterPerson -->
+  <g>
+    <rect x="280" y="350" width="220" height="120" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="280" y="350" width="220" height="24" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="390" y="367" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3A5C">CounterPerson</text>
+    <line x1="280" y1="374" x2="500" y2="374" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="288" y="389" font-size="10.5" fill="#222">- counterPersonId : UUID</text>
+    <line x1="280" y1="396" x2="500" y2="396" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="288" y="411" font-size="10.5" fill="#222">+ registerStudent()</text>
+    <text x="288" y="426" font-size="10.5" fill="#222">+ verifyPayment()</text>
+    <text x="288" y="441" font-size="10.5" fill="#222">+ manualAttendanceCorrection()</text>
+  </g>
+
+  <!-- Teacher -->
+  <g>
+    <rect x="520" y="350" width="200" height="120" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="520" y="350" width="200" height="24" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="620" y="367" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3A5C">Teacher</text>
+    <line x1="520" y1="374" x2="720" y2="374" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="528" y="389" font-size="10.5" fill="#222">- teacherId : UUID</text>
+    <line x1="520" y1="396" x2="720" y2="396" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="528" y="411" font-size="10.5" fill="#222">+ uploadLearningMaterial()</text>
+    <text x="528" y="426" font-size="10.5" fill="#222">+ uploadExamMarks()</text>
+    <text x="528" y="441" font-size="10.5" fill="#222">+ viewAssignedClasses()</text>
+  </g>
+
+  <!-- Student -->
+  <g>
+    <rect x="60" y="500" width="240" height="140" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="60" y="500" width="240" height="24" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="180" y="517" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3A5C">Student</text>
+    <line x1="60" y1="524" x2="300" y2="524" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="68" y="539" font-size="10.5" fill="#222">- studentId : UUID</text>
+    <text x="68" y="554" font-size="10.5" fill="#222">- parentId : UUID</text>
+    <text x="68" y="569" font-size="10.5" fill="#222">- moodleUserId : String</text>
+    <line x1="60" y1="577" x2="300" y2="577" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="68" y="592" font-size="10.5" fill="#222">+ scanQrAttendance()</text>
+    <text x="68" y="607" font-size="10.5" fill="#222">+ bookStudyArea()</text>
+    <text x="68" y="622" font-size="10.5" fill="#222">+ viewExamResults()</text>
+  </g>
+
+  <!-- Parent -->
+  <g>
+    <rect x="340" y="500" width="220" height="120" rx="4" fill="#FFFFFF" stroke="#2E5C8A" stroke-width="1.3"/>
+    <rect x="340" y="500" width="220" height="24" fill="#DCE8F5" stroke="#2E5C8A" stroke-width="1.3"/>
+    <text x="450" y="517" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3A5C">Parent</text>
+    <line x1="340" y1="524" x2="560" y2="524" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="348" y="539" font-size="10.5" fill="#222">- parentId : UUID</text>
+    <text x="348" y="554" font-size="10.5" fill="#222">- fullName : String</text>
+    <text x="348" y="569" font-size="10.5" fill="#222">- contactNumber : String</text>
+    <line x1="340" y1="577" x2="560" y2="577" stroke="#2E5C8A" stroke-width="1"/>
+    <text x="348" y="592" font-size="10.5" fill="#222">+ receiveSmsNotification()</text>
+  </g>
+
+  <!-- Inheritance arrows User -> subclasses (hollow triangle) -->
+  <path d="M420 296 L420 320 L160 320 L160 350" fill="none" stroke="#2E5C8A" stroke-width="1" marker-end="url(#triangle)"/>
+  <path d="M420 296 L420 320 L390 320 L390 350" fill="none" stroke="#2E5C8A" stroke-width="1" marker-end="url(#triangle)"/>
+  <path d="M420 296 L420 320 L620 320 L620 350" fill="none" stroke="#2E5C8A" stroke-width="1" marker-end="url(#triangle)"/>
+  <path d="M420 296 L420 470 L180 470 L180 500" fill="none" stroke="#2E5C8A" stroke-width="1" marker-end="url(#triangle)"/>
+
+  <!-- Parent to Student association -->
+  <line x1="340" y1="560" x2="300" y2="560" stroke="#2E5C8A" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="305" y="552" font-size="9.5" fill="#444">1</text>
+  <text x="335" y="552" font-size="9.5" fill="#444">0..*</text>
+  <text x="240" y="478" font-size="10" fill="#555" font-style="italic">has children</text>
+
+  <!-- ============ PACKAGE: ACADEMIC STRUCTURE ============ -->
+  <rect x="860" y="90" width="600" height="290" rx="10" fill="#F8F5FB" stroke="#B6A4D6" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="880" y="114" font-size="15" font-weight="bold" fill="#5A3A8A">Academic Structure</text>
+
+  <!-- Course -->
+  <g>
+    <rect x="880" y="130" width="220" height="130" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="880" y="130" width="220" height="24" fill="#E8E0F5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="990" y="147" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">Course</text>
+    <line x1="880" y1="154" x2="1100" y2="154" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="888" y="169" font-size="10.5" fill="#222">- courseId : UUID</text>
+    <text x="888" y="184" font-size="10.5" fill="#222">- courseName : String</text>
+    <text x="888" y="199" font-size="10.5" fill="#222">- monthlyFee : Decimal</text>
+    <line x1="880" y1="207" x2="1100" y2="207" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="888" y="222" font-size="10.5" fill="#222">+ calculateFee()</text>
+    <text x="888" y="237" font-size="10.5" fill="#222">+ getEnrolledStudents()</text>
+  </g>
+
+  <!-- Subject -->
+  <g>
+    <rect x="1140" y="130" width="180" height="100" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="1140" y="130" width="180" height="24" fill="#E8E0F5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="1230" y="147" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">Subject</text>
+    <line x1="1140" y1="154" x2="1320" y2="154" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1148" y="169" font-size="10.5" fill="#222">- subjectId : UUID</text>
+    <text x="1148" y="184" font-size="10.5" fill="#222">- subjectName : String</text>
+    <line x1="1140" y1="192" x2="1320" y2="192" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1148" y="207" font-size="10.5" fill="#222">+ assignTeacher()</text>
+  </g>
+
+  <!-- ClassSession -->
+  <g>
+    <rect x="880" y="280" width="220" height="90" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="880" y="280" width="220" height="24" fill="#E8E0F5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="990" y="297" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">ClassSession</text>
+    <line x1="880" y1="304" x2="1100" y2="304" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="888" y="319" font-size="10.5" fill="#222">- classId, hallId : UUID</text>
+    <text x="888" y="334" font-size="10.5" fill="#222">- scheduledDate, time</text>
+    <line x1="880" y1="342" x2="1100" y2="342" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="888" y="357" font-size="10.5" fill="#222">+ checkHallConflict()</text>
+  </g>
+
+  <!-- Hall -->
+  <g>
+    <rect x="1140" y="260" width="150" height="80" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="1140" y="260" width="150" height="24" fill="#E8E0F5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="1215" y="277" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">Hall</text>
+    <line x1="1140" y1="284" x2="1290" y2="284" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1148" y="299" font-size="10.5" fill="#222">- hallId : UUID</text>
+    <text x="1148" y="314" font-size="10.5" fill="#222">- capacity : Integer</text>
+  </g>
+
+  <!-- Timetable -->
+  <g>
+    <rect x="1140" y="350" width="170" height="80" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="1140" y="350" width="170" height="24" fill="#E8E0F5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="1225" y="367" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">Timetable</text>
+    <line x1="1140" y1="374" x2="1310" y2="374" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1148" y="389" font-size="10.5" fill="#222">- timetableId : UUID</text>
+    <text x="1148" y="404" font-size="10.5" fill="#222">+ generateSchedule()</text>
+  </g>
+
+  <line x1="1100" y1="190" x2="1140" y2="180" stroke="#6B4FA0" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="1100" y1="320" x2="1140" y2="300" stroke="#6B4FA0" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="1100" y1="345" x2="1140" y2="385" stroke="#6B4FA0" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Teacher to Subject -->
+  <path d="M720 410 L800 410 L800 195 L880 195" fill="none" stroke="#6B4FA0" stroke-width="1" marker-end="url(#arrow)" stroke-dasharray="5 3"/>
+  <text x="725" y="402" font-size="9.5" fill="#555">teaches</text>
+
+  <!-- Student to Course enrollment -->
+  <path d="M300 600 L820 600 L820 200 L880 200" fill="none" stroke="#6B4FA0" stroke-width="1" marker-end="url(#arrow)" stroke-dasharray="5 3"/>
+  <text x="500" y="592" font-size="9.5" fill="#555">enrolled in</text>
+
+  <!-- CounterPerson registers Student -->
+  <text x="225" y="490" font-size="10" fill="#444" font-style="italic">registers</text>
+
+  <!-- ============ PACKAGE: SMART ATTENDANCE (NOVELTY) ============ -->
+  <rect x="1500" y="90" width="700" height="420" rx="10" fill="#FBF4EC" stroke="#D9A56A" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="1520" y="114" font-size="15" font-weight="bold" fill="#8A5A1E">Smart Attendance Validation (novelty feature)</text>
+
+  <!-- AttendanceMaster -->
+  <g>
+    <rect x="1520" y="130" width="270" height="170" rx="4" fill="#FFFFFF" stroke="#B97A2E" stroke-width="1.5"/>
+    <rect x="1520" y="130" width="270" height="26" fill="#F3DDB8" stroke="#B97A2E" stroke-width="1.5"/>
+    <text x="1655" y="148" text-anchor="middle" font-size="14" font-weight="bold" fill="#6B4413">AttendanceMaster</text>
+    <line x1="1520" y1="156" x2="1790" y2="156" stroke="#B97A2E" stroke-width="1"/>
+    <text x="1528" y="173" font-size="10.8" fill="#222">- attendanceMasterId : UUID</text>
+    <text x="1528" y="188" font-size="10.8" fill="#222">- classId : UUID</text>
+    <text x="1528" y="203" font-size="10.8" fill="#222">- qrCount : Integer</text>
+    <text x="1528" y="218" font-size="10.8" fill="#222">- cctvEstimatedCount : Integer</text>
+    <text x="1528" y="233" font-size="10.8" fill="#222">- matchStatus : AttendanceMatchStatus</text>
+    <line x1="1520" y1="241" x2="1790" y2="241" stroke="#B97A2E" stroke-width="1"/>
+    <text x="1528" y="256" font-size="10.8" fill="#222">+ startAttendanceSession()</text>
+    <text x="1528" y="271" font-size="10.8" fill="#222">+ compareAttendanceCounts()</text>
+    <text x="1528" y="286" font-size="10.8" fill="#222">+ generateAttendanceReport()</text>
+  </g>
+
+  <!-- StudentAttendanceLog -->
+  <g>
+    <rect x="1840" y="130" width="280" height="140" rx="4" fill="#FFFFFF" stroke="#B97A2E" stroke-width="1.3"/>
+    <rect x="1840" y="130" width="280" height="24" fill="#F3DDB8" stroke="#B97A2E" stroke-width="1.3"/>
+    <text x="1980" y="147" text-anchor="middle" font-size="13" font-weight="bold" fill="#6B4413">StudentAttendanceLog</text>
+    <line x1="1840" y1="154" x2="2120" y2="154" stroke="#B97A2E" stroke-width="1"/>
+    <text x="1848" y="169" font-size="10.5" fill="#222">- logId : UUID</text>
+    <text x="1848" y="184" font-size="10.5" fill="#222">- studentId : UUID</text>
+    <text x="1848" y="199" font-size="10.5" fill="#222">- qrScanTime : DateTime</text>
+    <text x="1848" y="214" font-size="10.5" fill="#222">- markedStatus : String</text>
+    <line x1="1840" y1="222" x2="2120" y2="222" stroke="#B97A2E" stroke-width="1"/>
+    <text x="1848" y="237" font-size="10.5" fill="#222">+ recordQrScan()</text>
+    <text x="1848" y="252" font-size="10.5" fill="#222">+ calculateAttendancePercentage()</text>
+  </g>
+
+  <!-- SuspiciousAttendanceLog -->
+  <g>
+    <rect x="1520" y="340" width="320" height="150" rx="4" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.5"/>
+    <rect x="1520" y="340" width="320" height="26" fill="#F5D5CE" stroke="#C0392B" stroke-width="1.5"/>
+    <text x="1680" y="358" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7A2616">SuspiciousAttendanceLog</text>
+    <line x1="1520" y1="366" x2="1840" y2="366" stroke="#C0392B" stroke-width="1"/>
+    <text x="1528" y="382" font-size="10.5" fill="#222">- suspiciousLogId : UUID</text>
+    <text x="1528" y="397" font-size="10.5" fill="#222">- attendanceMasterId : UUID</text>
+    <text x="1528" y="412" font-size="10.5" fill="#222">- studentId : UUID (nullable)</text>
+    <text x="1528" y="427" font-size="10.5" fill="#222">- detectionResult : String</text>
+    <text x="1528" y="442" font-size="10.5" fill="#222">- reviewedByCounterPersonId : UUID</text>
+    <line x1="1520" y1="450" x2="1840" y2="450" stroke="#C0392B" stroke-width="1"/>
+    <text x="1528" y="465" font-size="10.5" fill="#222">+ triggerFaceVerification()</text>
+    <text x="1528" y="480" font-size="10.5" fill="#222">+ resolveSuspiciousCase()</text>
+  </g>
+
+  <text x="1855" y="320" font-size="10.5" fill="#8A3322" font-style="italic" font-weight="bold">Added per codebase audit:</text>
+  <text x="1855" y="336" font-size="10" fill="#8A3322" font-style="italic">previously missing from UML</text>
+  <text x="1855" y="350" font-size="10" fill="#8A3322" font-style="italic">though fully implemented in DB</text>
+
+  <line x1="1790" y1="200" x2="1840" y2="200" stroke="#B97A2E" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="1795" y="192" font-size="9.5" fill="#444">1</text>
+  <text x="1815" y="192" font-size="9.5" fill="#444">0..*</text>
+
+  <line x1="1655" y1="300" x2="1655" y2="340" stroke="#C0392B" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="1662" y="320" font-size="9.5" fill="#444">flags</text>
+
+  <!-- ============ PACKAGE: STUDY AREA ALLOCATION (NOVELTY) ============ -->
+  <rect x="40" y="650" width="560" height="240" rx="10" fill="#EAF5F0" stroke="#5BAE8E" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="60" y="674" font-size="15" font-weight="bold" fill="#1E6B4C">Smart Study Area Allocation (novelty feature)</text>
+
+  <g>
+    <rect x="60" y="690" width="180" height="90" rx="4" fill="#FFFFFF" stroke="#2E8B66" stroke-width="1.3"/>
+    <rect x="60" y="690" width="180" height="24" fill="#D5EFE2" stroke="#2E8B66" stroke-width="1.3"/>
+    <text x="150" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A5C3F">StudyArea</text>
+    <line x1="60" y1="714" x2="240" y2="714" stroke="#2E8B66" stroke-width="1"/>
+    <text x="68" y="729" font-size="10.5" fill="#222">- studyAreaId : UUID</text>
+    <text x="68" y="744" font-size="10.5" fill="#222">- capacity : Integer</text>
+    <line x1="60" y1="752" x2="240" y2="752" stroke="#2E8B66" stroke-width="1"/>
+    <text x="68" y="767" font-size="10.5" fill="#222"> </text>
+  </g>
+
+  <g>
+    <rect x="280" y="690" width="280" height="175" rx="4" fill="#FFFFFF" stroke="#2E8B66" stroke-width="1.3"/>
+    <rect x="280" y="690" width="280" height="24" fill="#D5EFE2" stroke="#2E8B66" stroke-width="1.3"/>
+    <text x="420" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A5C3F">StudyAreaBooking</text>
+    <line x1="280" y1="714" x2="560" y2="714" stroke="#2E8B66" stroke-width="1"/>
+    <text x="288" y="729" font-size="10.5" fill="#222">- bookingId : UUID</text>
+    <text x="288" y="744" font-size="10.5" fill="#222">- studentId, studyAreaId : UUID</text>
+    <text x="288" y="759" font-size="10.5" fill="#222">- bookingStart, bookingEnd</text>
+    <text x="288" y="774" font-size="10.5" fill="#222">- arrivalConfirmedAt : DateTime</text>
+    <text x="288" y="789" font-size="10.5" fill="#222">- status : BookingStatus</text>
+    <line x1="280" y1="797" x2="560" y2="797" stroke="#2E8B66" stroke-width="1"/>
+    <text x="288" y="812" font-size="10.5" fill="#222">+ createBooking()</text>
+    <text x="288" y="827" font-size="10.5" fill="#222">+ confirmArrival()</text>
+    <text x="288" y="842" font-size="10.5" fill="#222">+ autoReleaseSeat()</text>
+  </g>
+
+  <line x1="240" y1="735" x2="280" y2="735" stroke="#2E8B66" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="245" y="727" font-size="9.5" fill="#444">1</text>
+  <text x="260" y="727" font-size="9.5" fill="#444">0..*</text>
+
+  <!-- ============ PACKAGE: PAYMENT MANAGEMENT ============ -->
+  <rect x="640" y="650" width="600" height="300" rx="10" fill="#FBEFF2" stroke="#C97A95" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="660" y="674" font-size="15" font-weight="bold" fill="#8A3553">Payment Management</text>
+
+  <g>
+    <rect x="660" y="690" width="220" height="140" rx="4" fill="#FFFFFF" stroke="#A8466A" stroke-width="1.3"/>
+    <rect x="660" y="690" width="220" height="24" fill="#F3D9E2" stroke="#A8466A" stroke-width="1.3"/>
+    <text x="770" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#6B2C44">Payment</text>
+    <line x1="660" y1="714" x2="880" y2="714" stroke="#A8466A" stroke-width="1"/>
+    <text x="668" y="729" font-size="10.5" fill="#222">- paymentId : UUID</text>
+    <text x="668" y="744" font-size="10.5" fill="#222">- amount : Decimal</text>
+    <text x="668" y="759" font-size="10.5" fill="#222">- status : PaymentStatus</text>
+    <line x1="660" y1="767" x2="880" y2="767" stroke="#A8466A" stroke-width="1"/>
+    <text x="668" y="782" font-size="10.5" fill="#222">+ recordPayment()</text>
+    <text x="668" y="797" font-size="10.5" fill="#222">+ checkOverdueStatus()</text>
+  </g>
+
+  <g>
+    <rect x="920" y="690" width="280" height="140" rx="4" fill="#FFFFFF" stroke="#A8466A" stroke-width="1.3"/>
+    <rect x="920" y="690" width="280" height="24" fill="#F3D9E2" stroke="#A8466A" stroke-width="1.3"/>
+    <text x="1060" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#6B2C44">PaymentConfirmation</text>
+    <line x1="920" y1="714" x2="1200" y2="714" stroke="#A8466A" stroke-width="1"/>
+    <text x="928" y="729" font-size="10.5" fill="#222">- confirmationId : UUID</text>
+    <text x="928" y="744" font-size="10.5" fill="#222">- uploadedSlipUrl : String</text>
+    <text x="928" y="759" font-size="10.5" fill="#222">- verificationStatus : PaymentStatus</text>
+    <line x1="920" y1="767" x2="1200" y2="767" stroke="#A8466A" stroke-width="1"/>
+    <text x="928" y="782" font-size="10.5" fill="#222">+ uploadConfirmationSlip()</text>
+    <text x="928" y="797" font-size="10.5" fill="#222">+ verifyPayment()</text>
+  </g>
+
+  <g>
+    <rect x="660" y="855" width="220" height="80" rx="4" fill="#FFFFFF" stroke="#A8466A" stroke-width="1.3"/>
+    <rect x="660" y="855" width="220" height="24" fill="#F3D9E2" stroke="#A8466A" stroke-width="1.3"/>
+    <text x="770" y="872" text-anchor="middle" font-size="13" font-weight="bold" fill="#6B2C44">Receipt</text>
+    <line x1="660" y1="879" x2="880" y2="879" stroke="#A8466A" stroke-width="1"/>
+    <text x="668" y="894" font-size="10.5" fill="#222">- receiptNumber : String</text>
+    <line x1="660" y1="902" x2="880" y2="902" stroke="#A8466A" stroke-width="1"/>
+    <text x="668" y="917" font-size="10.5" fill="#222">+ generateReceipt()</text>
+  </g>
+
+  <line x1="880" y1="730" x2="920" y2="730" stroke="#A8466A" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="770" y1="830" x2="770" y2="855" stroke="#A8466A" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="703" y="845" font-size="9.5" fill="#444">generates</text>
+
+  <!-- ============ PACKAGE: COMMUNICATION ============ -->
+  <rect x="1280" y="650" width="280" height="160" rx="10" fill="#F4F0FA" stroke="#9B7EC8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="1300" y="674" font-size="15" font-weight="bold" fill="#4F2E8A">Communication</text>
+
+  <g>
+    <rect x="1300" y="690" width="240" height="105" rx="4" fill="#FFFFFF" stroke="#6B4FA0" stroke-width="1.3"/>
+    <rect x="1300" y="690" width="240" height="24" fill="#E5DCF5" stroke="#6B4FA0" stroke-width="1.3"/>
+    <text x="1420" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#3F2A6B">SmsNotification</text>
+    <line x1="1300" y1="714" x2="1540" y2="714" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1308" y="729" font-size="10.5" fill="#222">- messageType : String</text>
+    <text x="1308" y="744" font-size="10.5" fill="#222">- status : SmsStatus</text>
+    <line x1="1300" y1="752" x2="1540" y2="752" stroke="#6B4FA0" stroke-width="1"/>
+    <text x="1308" y="767" font-size="10.5" fill="#222">+ sendSms()</text>
+    <text x="1308" y="782" font-size="10.5" fill="#222">+ retryFailedSms()</text>
+  </g>
+
+  <!-- ============ PACKAGE: ACADEMIC RECORDS ============ -->
+  <rect x="1600" y="650" width="600" height="300" rx="10" fill="#EAF1FB" stroke="#6FA0D8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="1620" y="674" font-size="15" font-weight="bold" fill="#1E5290">Academic Records</text>
+
+  <g>
+    <rect x="1620" y="690" width="180" height="90" rx="4" fill="#FFFFFF" stroke="#2E6BB0" stroke-width="1.3"/>
+    <rect x="1620" y="690" width="180" height="24" fill="#D6E6F8" stroke="#2E6BB0" stroke-width="1.3"/>
+    <text x="1710" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3F6E">Exam</text>
+    <line x1="1620" y1="714" x2="1800" y2="714" stroke="#2E6BB0" stroke-width="1"/>
+    <text x="1628" y="729" font-size="10.5" fill="#222">- examId : UUID</text>
+    <text x="1628" y="744" font-size="10.5" fill="#222">- examType : String</text>
+  </g>
+
+  <g>
+    <rect x="1840" y="690" width="200" height="120" rx="4" fill="#FFFFFF" stroke="#2E6BB0" stroke-width="1.3"/>
+    <rect x="1840" y="690" width="200" height="24" fill="#D6E6F8" stroke="#2E6BB0" stroke-width="1.3"/>
+    <text x="1940" y="707" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3F6E">ExamMark</text>
+    <line x1="1840" y1="714" x2="2040" y2="714" stroke="#2E6BB0" stroke-width="1"/>
+    <text x="1848" y="729" font-size="10.5" fill="#222">- marks : Decimal</text>
+    <text x="1848" y="744" font-size="10.5" fill="#222">- uploadBatchId : UUID</text>
+    <text x="1848" y="759" font-size="10.5" fill="#222">- status : ExamMarkStatus</text>
+    <line x1="1840" y1="767" x2="2040" y2="767" stroke="#2E6BB0" stroke-width="1"/>
+    <text x="1848" y="782" font-size="10.5" fill="#222">+ uploadMarksFromExcel()</text>
+  </g>
+
+  <g>
+    <rect x="1620" y="815" width="280" height="110" rx="4" fill="#FFFFFF" stroke="#2E6BB0" stroke-width="1.3"/>
+    <rect x="1620" y="815" width="280" height="24" fill="#D6E6F8" stroke="#2E6BB0" stroke-width="1.3"/>
+    <text x="1760" y="832" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A3F6E">LearningMaterial</text>
+    <line x1="1620" y1="839" x2="1900" y2="839" stroke="#2E6BB0" stroke-width="1"/>
+    <text x="1628" y="854" font-size="10.5" fill="#222">- fileUrl : String</text>
+    <text x="1628" y="869" font-size="10.5" fill="#222">- title : String</text>
+    <line x1="1620" y1="877" x2="1900" y2="877" stroke="#2E6BB0" stroke-width="1"/>
+    <text x="1628" y="892" font-size="10.5" fill="#222">+ uploadMaterial() / downloadMaterial()</text>
+  </g>
+
+  <line x1="1800" y1="730" x2="1840" y2="730" stroke="#2E6BB0" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- ============ PACKAGE: PUBLIC WEBSITE ============ -->
+  <rect x="640" y="990" width="700" height="280" rx="10" fill="#FDF0EC" stroke="#D9876A" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="660" y="1014" font-size="15" font-weight="bold" fill="#8A3A1E">Public Website</text>
+
+  <g>
+    <rect x="660" y="1030" width="240" height="130" rx="4" fill="#FFFFFF" stroke="#C0572E" stroke-width="1.3"/>
+    <rect x="660" y="1030" width="240" height="24" fill="#F5DECF" stroke="#C0572E" stroke-width="1.3"/>
+    <text x="780" y="1047" text-anchor="middle" font-size="13" font-weight="bold" fill="#7A341A">PromotionContent</text>
+    <line x1="660" y1="1054" x2="900" y2="1054" stroke="#C0572E" stroke-width="1"/>
+    <text x="668" y="1069" font-size="10.5" fill="#222">- contentType : String</text>
+    <text x="668" y="1084" font-size="10.5" fill="#222">- imageUrl : String</text>
+    <text x="668" y="1099" font-size="10.5" fill="#222">- displayOrder : Integer</text>
+    <text x="668" y="1114" font-size="10.5" fill="#222">- isActive : Boolean</text>
+    <line x1="660" y1="1122" x2="900" y2="1122" stroke="#C0572E" stroke-width="1"/>
+    <text x="668" y="1137" font-size="10.5" fill="#222">+ publishContent()</text>
+  </g>
+  <text x="660" y="1180" font-size="10" fill="#8A3A1E" font-style="italic" font-weight="bold">Renamed per audit:</text>
+  <text x="660" y="1195" font-size="10" fill="#8A3A1E" font-style="italic">was "WebsiteContent" in earlier</text>
+  <text x="660" y="1209" font-size="10" fill="#8A3A1E" font-style="italic">UML — actual table is Promotion_Content</text>
+
+  <g>
+    <rect x="940" y="1030" width="180" height="90" rx="4" fill="#FFFFFF" stroke="#C0572E" stroke-width="1.3"/>
+    <rect x="940" y="1030" width="180" height="24" fill="#F5DECF" stroke="#C0572E" stroke-width="1.3"/>
+    <text x="1030" y="1047" text-anchor="middle" font-size="13" font-weight="bold" fill="#7A341A">Announcement</text>
+    <line x1="940" y1="1054" x2="1120" y2="1054" stroke="#C0572E" stroke-width="1"/>
+    <text x="948" y="1069" font-size="10.5" fill="#222">- title, body : String</text>
+    <line x1="940" y1="1077" x2="1120" y2="1077" stroke="#C0572E" stroke-width="1"/>
+    <text x="948" y="1092" font-size="10.5" fill="#222">+ publishAnnouncement()</text>
+  </g>
+
+  <g>
+    <rect x="1150" y="1030" width="170" height="110" rx="4" fill="#FFFFFF" stroke="#C0572E" stroke-width="1.3"/>
+    <rect x="1150" y="1030" width="170" height="24" fill="#F5DECF" stroke="#C0572E" stroke-width="1.3"/>
+    <text x="1235" y="1047" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A341A">StudentAchievement</text>
+    <line x1="1150" y1="1054" x2="1320" y2="1054" stroke="#C0572E" stroke-width="1"/>
+    <text x="1158" y="1069" font-size="10.3" fill="#222">- achievementTitle</text>
+    <text x="1158" y="1084" font-size="10.3" fill="#222">- islandRank : Integer</text>
+    <line x1="1150" y1="1092" x2="1320" y2="1092" stroke="#C0572E" stroke-width="1"/>
+    <text x="1158" y="1107" font-size="10.3" fill="#222">+ displayAchievement()</text>
+  </g>
+
+  <!-- ============ ENUMERATIONS PANEL ============ -->
+  <rect x="40" y="940" width="560" height="660" rx="10" fill="#F4F4F4" stroke="#9A9A9A" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="60" y="964" font-size="15" font-weight="bold" fill="#444">Enumerations (7 types)</text>
+
+  <!-- enum boxes -->
+  <g>
+    <rect x="60" y="980" width="240" height="110" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="60" y="980" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="180" y="996" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» UserRole</text>
+    <text x="70" y="1015" font-size="10" fill="#333">ADMIN</text>
+    <text x="70" y="1030" font-size="10" fill="#333">COUNTER_PERSON</text>
+    <text x="70" y="1045" font-size="10" fill="#333">TEACHER</text>
+    <text x="70" y="1060" font-size="10" fill="#333">STUDENT</text>
+  </g>
+
+  <g>
+    <rect x="320" y="980" width="240" height="95" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="320" y="980" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="440" y="996" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» AccountStatus</text>
+    <text x="330" y="1015" font-size="10" fill="#333">ACTIVE</text>
+    <text x="330" y="1030" font-size="10" fill="#333">INACTIVE</text>
+    <text x="330" y="1045" font-size="10" fill="#333">SUSPENDED</text>
+  </g>
+
+  <g>
+    <rect x="60" y="1105" width="240" height="125" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="60" y="1105" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="180" y="1121" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» AttendanceMatchStatus</text>
+    <text x="70" y="1140" font-size="10" fill="#333">MATCHED</text>
+    <text x="70" y="1155" font-size="10" fill="#333">MISMATCH_DETECTED</text>
+    <text x="70" y="1170" font-size="10" fill="#333">UNDER_VERIFICATION</text>
+    <text x="70" y="1185" font-size="10" fill="#333">RESOLVED</text>
+  </g>
+
+  <g>
+    <rect x="320" y="1105" width="240" height="110" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="320" y="1105" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="440" y="1121" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» BookingStatus</text>
+    <text x="330" y="1140" font-size="10" fill="#333">PENDING</text>
+    <text x="330" y="1155" font-size="10" fill="#333">CONFIRMED</text>
+    <text x="330" y="1170" font-size="10" fill="#333">AUTO_CANCELLED</text>
+    <text x="330" y="1185" font-size="10" fill="#333">COMPLETED</text>
+  </g>
+
+  <g>
+    <rect x="60" y="1255" width="240" height="125" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="60" y="1255" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="180" y="1271" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» PaymentStatus</text>
+    <text x="70" y="1290" font-size="10" fill="#333">UNPAID</text>
+    <text x="70" y="1305" font-size="10" fill="#333">PENDING_VERIFICATION</text>
+    <text x="70" y="1320" font-size="10" fill="#333">VERIFIED</text>
+    <text x="70" y="1335" font-size="10" fill="#333">OVERDUE</text>
+  </g>
+
+  <g>
+    <rect x="320" y="1255" width="240" height="95" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="320" y="1255" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="440" y="1271" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» SmsStatus</text>
+    <text x="330" y="1290" font-size="10" fill="#333">QUEUED</text>
+    <text x="330" y="1305" font-size="10" fill="#333">SENT</text>
+    <text x="330" y="1320" font-size="10" fill="#333">FAILED</text>
+  </g>
+
+  <g>
+    <rect x="60" y="1405" width="240" height="80" rx="4" fill="#FFFFFF" stroke="#888" stroke-width="1.1"/>
+    <rect x="60" y="1405" width="240" height="22" fill="#E8E8E8" stroke="#888" stroke-width="1.1"/>
+    <text x="180" y="1421" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#333">«enumeration» ExamMarkStatus</text>
+    <text x="70" y="1440" font-size="10" fill="#333">DRAFT</text>
+    <text x="70" y="1455" font-size="10" fill="#333">PUBLISHED</text>
+  </g>
+
+  <!-- Removed Report class note -->
+  <rect x="60" y="1510" width="500" height="70" rx="6" fill="#FFF5F5" stroke="#C0392B" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="75" y="1532" font-size="11.5" font-weight="bold" fill="#7A2616">Note — "Report" class removed from this diagram</text>
+  <text x="75" y="1550" font-size="10.3" fill="#5A2016">Earlier UML drafts included a Report class with no backing</text>
+  <text x="75" y="1564" font-size="10.3" fill="#5A2016">database table. Reporting is implemented as read-only query</text>
+  <text x="75" y="1578" font-size="10.3" fill="#5A2016" font-style="none">endpoints over existing tables, not a persisted entity.</text>
+
+  <!-- Legend -->
+  <rect x="60" y="1610" width="500" height="280" rx="6" fill="#FFFFFF" stroke="#999" stroke-width="1"/>
+  <text x="75" y="1634" font-size="13" font-weight="bold" fill="#333">Legend</text>
+
+  <line x1="80" y1="1655" x2="140" y2="1655" stroke="#2E5C8A" stroke-width="1" marker-end="url(#triangle)"/>
+  <text x="150" y="1660" font-size="11" fill="#333">Inheritance (role subclass of User)</text>
+
+  <line x1="80" y1="1680" x2="140" y2="1680" stroke="#2E5C8A" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="150" y="1685" font-size="11" fill="#333">Association (1 → 0..*, navigable)</text>
+
+  <line x1="80" y1="1705" x2="140" y2="1705" stroke="#6B4FA0" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+  <text x="150" y="1710" font-size="11" fill="#333">Dependency / enrollment relation</text>
+
+  <text x="80" y="1736" font-size="11" fill="#333">Backend implementation note:</text>
+  <text x="80" y="1754" font-size="10.3" fill="#555">All classes shown are implemented as procedural</text>
+  <text x="80" y="1769" font-size="10.3" fill="#555">controller functions in Express.js (no OOP class</text>
+  <text x="80" y="1784" font-size="10.3" fill="#555">instances) operating on PostgreSQL tables matching</text>
+  <text x="80" y="1799" font-size="10.3" fill="#555">these class names. Attributes map to table columns;</text>
+  <text x="80" y="1814" font-size="10.3" fill="#555">methods map to exported controller/service functions.</text>
+
+  <text x="80" y="1845" font-size="10.3" fill="#7A2616" font-weight="bold">Highlighted in orange/red:</text>
+  <text x="80" y="1860" font-size="10" fill="#5A2016">Attendance_Master + Suspicious_Attendance_Logs</text>
+  <text x="80" y="1874" font-size="10" fill="#5A2016">reconciled into diagram after codebase audit.</text>
+
+  <!-- Relationships connecting major packages (cross-package) -->
+  <path d="M280 226 L860 226" fill="none" stroke="#888" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.4"/>
+
+</svg>
