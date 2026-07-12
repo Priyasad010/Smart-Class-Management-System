@@ -41,17 +41,20 @@ const SmartAttendanceLivePanel = ({ halls, activeSessions }) => {
         isFormData: true
       });
       
-      const resultData = response.data;
+      // Backend returns: { message, data: { qr_count, ai_headcount, mismatch_detected, zone_breakdown, verification_data } }
+      const resultData = response.data || response;
+      const innerData = resultData.data || resultData;
+      
       setLiveData({
-        qr_count: resultData.qr_count,
-        ai_headcount: resultData.ai_headcount,
-        mismatch_detected: resultData.mismatch_detected,
-        threshold: 5 // Default threshold
+        qr_count: innerData.qr_count ?? 0,
+        ai_headcount: innerData.ai_headcount ?? 0,
+        mismatch_detected: innerData.mismatch_detected ?? false,
+        threshold: innerData.threshold ?? 0
       });
       
       setSelectedFile(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'CCTV upload failed');
     } finally {
       setUploading(false);
     }

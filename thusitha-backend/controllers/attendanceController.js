@@ -47,15 +47,24 @@ exports.markAttendanceByQR = async (req, res) => {
     }
     const student = studentRes.rows[0];
 
-    // 2. පන්තිය සොයා ගැනීම
+    // 2. පන්තිය සොයා ගැනීම (day_of_week array format support)
     const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
     const courseRes = await db.pool.query(
-      'SELECT c.course_name, cs.start_time FROM Courses c JOIN Class_Schedules cs ON c.course_id = cs.course_id WHERE c.course_id = $1 AND cs.day_of_week = $2', 
+      `SELECT c.course_name, cs.start_time, cs.schedule_id 
+       FROM Courses c 
+       JOIN Class_Schedules cs ON c.course_id = cs.course_id 
+       WHERE c.course_id = $1 
+         AND (
+           cs.day_of_week = $2 
+           OR cs.day_of_week = '{"' || $2 || '"}'
+           OR cs.day_of_week::text ILIKE '%' || $2 || '%'
+         )`, 
       [course_id, dayOfWeek]
     );
     const course = courseRes.rows[0];
     const courseName = course?.course_name || "General Class";
-    const startTime = course?.start_time; // Expecting format 'HH:MM:SS' from DB
+    const startTime = course?.start_time;
+    const session_id = course?.schedule_id; // Correct session_id for AI tracking
 
     // 💡 Industrial Logic: Determine if student is 'Late' (15 min threshold)
     let attendanceStatus = 'Present';
@@ -87,10 +96,10 @@ exports.markAttendanceByQR = async (req, res) => {
 
     // 4. පැමිණීම සටහන් කිරීම
     const recordQuery = `
-      INSERT INTO Student_Attendance_Logs (student_id, course_id, attendance_status, scanned_at)
-      VALUES ($1, $2, $3, NOW()) RETURNING scanned_at
+      INSERT INTO Student_Attendance_Logs (student_id, course_id, session_id, attendance_status, scanned_at)
+      VALUES ($1, $2, $3, $4, NOW()) RETURNING scanned_at
     `;
-    const result = await db.pool.query(recordQuery, [student.student_id, course_id, attendanceStatus]);
+    const result = await db.pool.query(recordQuery, [student.student_id, course_id, session_id, attendanceStatus]);
     const scannedAt = result.rows[0].scanned_at;
     const timeString = new Date(scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -141,9 +150,9 @@ exports.validateAttendanceWithZones = async (req, res) => {
     );
     const qrCount = Number.parseInt(qrCountRes.rows[0].count, 10);
 
-    // 💡 Fetching the AI mismatch threshold dynamically (defaulting to 5 if not set in System_Settings)
+    // 💡 Fetching the AI mismatch threshold dynamically (defaulting to 0 if not set in System_Settings)
     const settingsRes = await db.pool.query("SELECT setting_value FROM System_Settings WHERE setting_key = 'ai_mismatch_threshold'");
-    const aiThreshold = settingsRes.rows[0]?.setting_value ? Number.parseInt(settingsRes.rows[0].setting_value, 10) : 5;
+    const aiThreshold = settingsRes.rows[0]?.setting_value ? Number.parseInt(settingsRes.rows[0].setting_value, 10) : 0;
 
     // 4. Mismatch Detection (Triggered if difference > dynamic threshold)
     const mismatchDetected = Math.abs(totalAIHeadcount - qrCount) > aiThreshold;
@@ -754,23 +763,63 @@ exports.manualCorrection = async (req, res) => {
 
 /**
  * 🟢 Lightweight Polling Endpoint for SmartAttendanceLivePanel
+ * Real-time QR count is fetched directly from Student_Attendance_Logs,
+ * joined via attendance_sessions so we handle both session_id systems.
  */
 exports.getLiveStatus = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // id = Class_Schedules.schedule_id (used by Attendance_Master)
   try {
-    const result = await db.pool.query('SELECT qr_count, ai_headcount, mismatch_detected, zone_details FROM Attendance_Master WHERE session_id = $1', [id]);
+    // 1. Get ai_headcount from Attendance_Master (set by CCTV upload)
+    const masterResult = await db.pool.query(
+      'SELECT ai_headcount, zone_details FROM Attendance_Master WHERE session_id = $1', 
+      [id]
+    );
     
-    // Also return the dynamic threshold
-    const settingsRes = await db.pool.query("SELECT setting_value FROM System_Settings WHERE setting_key = 'ai_mismatch_threshold'");
-    const aiThreshold = settingsRes.rows[0]?.setting_value ? Number.parseInt(settingsRes.rows[0].setting_value, 10) : 5;
+    // 2. Get the course_id from Class_Schedules using this schedule_id
+    const scheduleRes = await db.pool.query(
+      'SELECT course_id FROM Class_Schedules WHERE schedule_id = $1',
+      [id]
+    );
+    const courseId = scheduleRes.rows[0]?.course_id;
 
-    if (result.rows.length === 0) {
+    let liveQRCount = 0;
+    if (courseId) {
+      // 3. Get REAL-TIME QR count: count students who scanned today for this course
+      //    via attendance_sessions (QR system) linked to Student_Attendance_Logs
+      const qrCountRes = await db.pool.query(
+        `SELECT COUNT(DISTINCT sal.student_id) as count 
+         FROM Student_Attendance_Logs sal
+         JOIN attendance_sessions asess ON sal.session_id = asess.session_id
+         WHERE asess.course_id = $1 
+           AND sal.scanned_at::date = CURRENT_DATE`,
+        [courseId]
+      );
+      liveQRCount = parseInt(qrCountRes.rows[0]?.count || '0', 10);
+    }
+
+    // 4. Get dynamic threshold
+    const settingsRes = await db.pool.query("SELECT setting_value FROM System_Settings WHERE setting_key = 'ai_mismatch_threshold'");
+    const aiThreshold = settingsRes.rows[0]?.setting_value ? Number.parseInt(settingsRes.rows[0].setting_value, 10) : 0;
+
+    if (masterResult.rows.length === 0) {
+      // No CCTV upload yet - still show real QR count
+      const mismatch = false; // No AI headcount yet to compare
       return res.status(200).json({
-        qr_count: 0, ai_headcount: 0, mismatch_detected: false, zone_breakdown: {}, threshold: aiThreshold
+        qr_count: liveQRCount, ai_headcount: 0, mismatch_detected: mismatch, zone_breakdown: {}, threshold: aiThreshold
       });
     }
 
-    const data = result.rows[0];
+    const data = masterResult.rows[0];
+    const aiHeadcount = data.ai_headcount || 0;
+
+    // 4. Calculate mismatch live using real QR count
+    const mismatchDetected = aiHeadcount > liveQRCount;
+
+    // Also update Attendance_Master with latest real QR count
+    await db.pool.query(
+      'UPDATE Attendance_Master SET qr_count = $1, mismatch_detected = $2 WHERE session_id = $3',
+      [liveQRCount, mismatchDetected, id]
+    );
     
     // Parse zone_details safely
     let parsedZones = {};
@@ -783,9 +832,9 @@ exports.getLiveStatus = async (req, res) => {
     }
 
     res.status(200).json({
-      qr_count: data.qr_count,
-      ai_headcount: data.ai_headcount,
-      mismatch_detected: data.mismatch_detected,
+      qr_count: liveQRCount,
+      ai_headcount: aiHeadcount,
+      mismatch_detected: mismatchDetected,
       zone_breakdown: parsedZones,
       threshold: aiThreshold
     });
@@ -793,6 +842,7 @@ exports.getLiveStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 /**
  * 💾 Bulk Save Manual Attendance
@@ -927,31 +977,48 @@ exports.uploadCCTVFootage = async (req, res) => {
     const totalAIHeadcount = headcountResult.total_ai_headcount;
     const zoneResults = headcountResult.zone_breakdown;
 
-    // Get QR Count
-    const qrCountRes = await db.pool.query(
-      `SELECT COUNT(DISTINCT student_id) FROM Student_Attendance_Logs 
-       WHERE session_id = $1 
-       AND DATE(scanned_at) = CURRENT_DATE`,
+    // Get course_id from this schedule (session_id = Class_Schedules.schedule_id)
+    const scheduleRes = await db.pool.query(
+      'SELECT course_id FROM Class_Schedules WHERE schedule_id = $1',
       [session_id]
     );
-    const qrCount = parseInt(qrCountRes.rows[0].count, 10);
+    const courseId = scheduleRes.rows[0]?.course_id;
+
+    // Get REAL QR Count via attendance_sessions bridge
+    let qrCount = 0;
+    if (courseId) {
+      const qrCountRes = await db.pool.query(
+        `SELECT COUNT(DISTINCT sal.student_id) as count
+         FROM Student_Attendance_Logs sal
+         JOIN attendance_sessions asess ON sal.session_id = asess.session_id
+         WHERE asess.course_id = $1
+           AND sal.scanned_at::date = CURRENT_DATE`,
+        [courseId]
+      );
+      qrCount = parseInt(qrCountRes.rows[0]?.count || '0', 10);
+    }
 
     // Fetch AI threshold
     const settingsRes = await db.pool.query("SELECT setting_value FROM System_Settings WHERE setting_key = 'ai_mismatch_threshold'");
-    const aiThreshold = settingsRes.rows[0]?.setting_value ? parseInt(settingsRes.rows[0].setting_value, 10) : 5;
+    const aiThreshold = settingsRes.rows[0]?.setting_value ? parseInt(settingsRes.rows[0].setting_value, 10) : 0;
 
-    const mismatchDetected = Math.abs(totalAIHeadcount - qrCount) > aiThreshold;
+    // Mismatch: AI sees more people than QR scans (someone is present without scanning)
+    const mismatchDetected = totalAIHeadcount > qrCount + aiThreshold;
 
-    // Get all students who scanned QR but are not verified yet
-    const studentsRes = await db.pool.query(
-      `SELECT s.student_id, s.student_name 
-       FROM Students s
-       JOIN Student_Attendance_Logs sal ON s.student_id = sal.student_id
-       WHERE sal.session_id = $1
-       AND sal.is_face_verified = FALSE
-       AND DATE(sal.scanned_at) = CURRENT_DATE`,
-      [session_id]
-    );
+    // Get all students who scanned QR today (for this course) but not face verified yet
+    let studentsRes = { rows: [] };
+    if (courseId) {
+      studentsRes = await db.pool.query(
+        `SELECT DISTINCT s.student_id, s.student_name 
+         FROM Students s
+         JOIN Student_Attendance_Logs sal ON s.student_id = sal.student_id
+         JOIN attendance_sessions asess ON sal.session_id = asess.session_id
+         WHERE asess.course_id = $1
+           AND sal.is_face_verified = FALSE
+           AND sal.scanned_at::date = CURRENT_DATE`,
+        [courseId]
+      );
+    }
 
     const verificationData = {
       unverified_students: studentsRes.rows.map(s => ({ id: s.student_id, name: s.student_name })),
@@ -990,6 +1057,7 @@ exports.uploadCCTVFootage = async (req, res) => {
         qr_count: qrCount,
         ai_headcount: totalAIHeadcount,
         mismatch_detected: mismatchDetected,
+        threshold: aiThreshold,
         zone_breakdown: zoneResults,
         verification_data: verificationData
       }
